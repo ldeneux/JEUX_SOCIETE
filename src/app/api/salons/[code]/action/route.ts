@@ -1,6 +1,6 @@
 import { soumettreAction } from '@/lib/jeux/moteur';
 import { ErreurHttp } from '@/lib/serveur/supabase';
-import { creerDeps, finaliserSiBesoin, repondre, salonParCode, sbService, utilisateur, type Params } from '@/lib/serveur/api';
+import { apresTransition, creerDeps, repondre, salonParCode, sbService, utilisateur, type Params } from '@/lib/serveur/api';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
@@ -18,7 +18,7 @@ export async function POST(req: Request, { params }: Params) {
     for (let essai = 0; ; essai++) {
       try {
         const res = await soumettreAction(creerDeps(sb, salon), salon.id, user.id, { id, valeur });
-        await finaliserSiBesoin(sb, salon, res.etat);
+        await apresTransition(sb, salon); // les IA jouent à leur tour, puis fin de partie éventuelle
         return { version: res.version };
       } catch (e: any) {
         if (e?.code === 'conflit' && essai < 2) continue;

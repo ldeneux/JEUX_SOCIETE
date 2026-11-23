@@ -35,9 +35,11 @@ export function creerDepot(sb: Sb): Depot {
     },
 
     async joueurs(salonId): Promise<Joueur[]> {
-      const { data, error } = await sb.from('plateforme_joueurs').select('id,pseudo,place').eq('salon_id', salonId).order('place');
+      const { data, error } = await sb.from('plateforme_joueurs').select('id,pseudo,place,est_ia').eq('salon_id', salonId).order('place');
       if (error) throw error;
-      return (data ?? []) as Joueur[];
+      return (data ?? []).map((j: { id: string; pseudo: string; place: number; est_ia: boolean }) => ({
+        id: j.id, pseudo: j.pseudo, place: j.place, ia: j.est_ia,
+      })) as Joueur[];
     },
 
     async joueurDeUser(salonId, userId) {

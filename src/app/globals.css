@@ -175,3 +175,23 @@ input:focus { outline: 2px solid var(--or); outline-offset: 1px; }
 .carte-modale p { max-width: 420px; color: #d8d2c0; margin: 0; }
 .mini-chrono { font-variant-numeric: tabular-nums; color: var(--doux); }
 .mini-chrono.urgent { color: var(--rouge); font-weight: 700; }
+
+/* Bannières de jeux (accueil) */
+.banniere { position: relative; display: flex; align-items: flex-end; min-height: clamp(280px, 42vw, 440px); border-radius: 22px; overflow: hidden; border: 1px solid var(--bord); background: #151922 center / cover no-repeat; }
+.banniere::before { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(10,12,18,.94) 0%, rgba(10,12,18,.55) 48%, rgba(10,12,18,.1) 100%); }
+.banniere > .contenu { position: relative; padding: clamp(1.2rem, 3vw, 2rem); width: 100%; display: grid; gap: .7rem; }
+.banniere h3 { font-size: clamp(1.4rem, 4vw, 2.2rem); color: var(--or-clair); margin: 0; text-shadow: 0 2px 18px #000; }
+.banniere p { margin: 0; max-width: 640px; color: #e0dac8; }
+.banniere .rang { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; }
+.banniere .rang .puce { background: rgba(0,0,0,.4); margin: 0; }
+.banniere.archives { background-position: center 40%; }
+.banniere .coin { position: absolute; z-index: 1; top: 1rem; left: 1rem; }
+.liste-bannieres { display: grid; gap: 1.2rem; }
+
+/* Compteur IA */
+.stepper { display: inline-flex; align-items: center; gap: .6rem; }
+.stepper .btn { width: 46px; min-height: 46px; padding: 0; font-size: 1.4rem; }
+.stepper-valeur { min-width: 4.5ch; text-align: center; font-family: var(--titre); font-size: 1.3rem; color: var(--or-clair); }
+.ligne-ia { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; padding: .8rem 0; border-top: 1px solid rgba(255,255,255,.08); border-bottom: 1px solid rgba(255,255,255,.08); margin: 1rem 0; }
+.ligne-ia small { display: block; color: var(--doux); max-width: 340px; }
+.total-table { font-family: var(--titre); color: var(--or-clair); font-size: 1.05rem; margin: .4rem 0 0; }

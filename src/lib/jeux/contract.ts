@@ -16,6 +16,8 @@ export interface Joueur {
   id: JoueurId;
   pseudo: string;
   place: number; // position autour de la table (voisins)
+  /** Joueur piloté par le serveur (IA). */
+  ia?: boolean;
 }
 
 // ---------------------------------------------------------------- Manifeste
@@ -192,4 +194,10 @@ export interface JeuModule<Etat = unknown, Config = unknown> {
 
   /** Non nul = partie terminée. */
   resultat(etat: Etat): Resultat | null;
+
+  /**
+   * Facultatif : joue pour un joueur IA. Ne doit utiliser que ce que ce joueur a le droit de savoir.
+   * Retourne une action légale, ou null s'il n'y a rien à faire.
+   */
+  ia?(etat: Etat, joueurId: JoueurId, rng: Rng): ActionJoueur | null;
 }

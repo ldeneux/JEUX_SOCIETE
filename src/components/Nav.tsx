@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { NOM_PLATEFORME } from '@/lib/marque';
 
 export function Nav() {
   return (
@@ -6,7 +7,7 @@ export function Nav() {
       <Link href="/" className="marque">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/icones/icone-192.png" alt="" width={34} height={34} />
-        Ravensburg
+        {NOM_PLATEFORME}
       </Link>
       <nav className="nav-liens">
         <Link href="/#jeux" className="cache-mobile">Jeux</Link>

@@ -1,5 +1,5 @@
 import { ZodError } from 'zod';
-import { ErreurJeu } from '../jeux/moteur';
+import { ErreurJeu, jouerIA } from '../jeux/moteur';
 import { obtenirModule } from '../jeux/registre';
 import { creerDepot } from './depot';
 import { creerDiffuseur } from './diffuseur';
@@ -64,6 +64,22 @@ export async function finaliserSiBesoin(sb: Sb, salon: Salon, etat: unknown) {
     const roles = ((fin.stats.roles ?? []) as { role: string }[]).map((r) => r.role);
     await mettreAJourFraicheur(sb, salon.hote_id, roles);
   }
+}
+
+/**
+ * À appeler après chaque démarrage / action / tick : fait jouer les IA, puis, si la partie est finie,
+ * met à jour le salon et la fraîcheur des rôles.
+ */
+export async function apresTransition(sb: Sb, salon: Salon) {
+  await jouerIA(creerDeps(sb, salon), salon.id);
+  const { data } = await sb.from('plateforme_etats').select('etat').eq('salon_id', salon.id).maybeSingle();
+  if (data?.etat) await finaliserSiBesoin(sb, salon, data.etat);
+}
+
+/** Nombre de joueurs IA demandé (options.ia), borné. */
+export function nbIA(options: Record<string, unknown> | undefined, max: number): number {
+  const n = Math.floor(Number(options?.ia ?? 0));
+  return Number.isFinite(n) ? Math.min(Math.max(n, 0), max) : 0;
 }
 
 export { sbService };

@@ -7,6 +7,7 @@ import { composerRoles } from './composition';
 import { parCode } from './roles';
 import type { Ctx, EtatLG } from './etat';
 import { joueur } from './etat';
+import { iaLG } from './ia';
 import { appliquerLG, attenteLG, avancerLG, nouvelleNuit, validerLG } from './deroule';
 import { vueConsoleLG, vueJoueurLG } from './vues';
 import { POOL_COMEDIEN } from './etapes-speciales';
@@ -16,7 +17,7 @@ export type { Config, EtatLG };
 
 const manifeste: Manifeste = {
   code: 'loupgarou',
-  nom: 'Ravensburg',
+  nom: 'LOUPS-GAROUS : ÉDITION RAVENSBURG',
   description: 'Le village dort, les loups rôdent, et une fenêtre s’illumine au sommet du château.',
   visuel: '/ravensburg/fond.webp',
   joueurs: { min: 6, max: 30 },
@@ -30,6 +31,7 @@ const manifeste: Manifeste = {
   ],
   options: [
     { code: 'dureeDiscussionSecondes', type: 'nombre', libelle: 'Discussion (s)', defaut: 180, min: 30, max: 900 },
+    { code: 'leurreSecondes', type: 'nombre', libelle: 'Rythme de la nuit : durée d’un réveil (s)', defaut: 6, min: 0, max: 30 },
     { code: 'maire', type: 'booleen', libelle: 'Élection d’un maire', defaut: true },
     { code: 'votePublic', type: 'booleen', libelle: 'Vote public', defaut: true },
     { code: 'narrationVocale', type: 'booleen', libelle: 'Narration vocale', defaut: true },
@@ -44,17 +46,20 @@ function setup({ joueurs, mode, config, rng }: SetupCtx<Config>): Transition<Eta
     nbJoueurs: joueurs.length, mode, imposes: config.rolesImposes, fraicheur: config.fraicheur, rng,
   });
   const distribution = rng.melanger(compo.roles);
+  // Priorité aux humains : ils sont servis en premier dans la distribution, les IA reçoivent le reste.
+  const humainsDabord = [...joueurs.filter((j) => !j.ia), ...joueurs.filter((j) => j.ia)];
+  const roleDe = new Map(humainsDabord.map((j, i) => [j.id, distribution[i]]));
   const d: EtatLG = {
     phase: 'nuit',
     nuit: 0,
-    joueurs: joueurs.map((j, i) => {
-      const role = distribution[i];
+    joueurs: joueurs.map((j) => {
+      const role = roleDe.get(j.id)!;
       const secret: Record<string, any> = {};
       if (role === 'comedien') secret.pouvoirs = rng.melanger(POOL_COMEDIEN).slice(0, 3);
       return {
         id: j.id, pseudo: j.pseudo, place: j.place,
         roleInitial: role, role, camp: parCode(role).camp,
-        vivant: true, maire: false, statuts: [], secret, roleRevele: false,
+        vivant: true, maire: false, statuts: [], secret, roleRevele: false, ia: !!j.ia,
       };
     }),
     // Les 2 cartes du Voleur restent côté serveur jusqu'à son réveil de la nuit 1.
@@ -109,4 +114,5 @@ export const loupgarou: JeuModule<EtatLG, Config> = {
   vueConsole: vueConsoleLG,
   vueJoueur: vueJoueurLG,
   resultat,
+  ia: iaLG,
 };

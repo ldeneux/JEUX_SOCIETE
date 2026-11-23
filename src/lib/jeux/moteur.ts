@@ -185,3 +185,49 @@ export async function vuePourConsole(deps: Deps, salonId: string) {
   const { s, mod } = await chargerOuErreur(deps, salonId);
   return { version: s.version, echeance: s.echeance, vue: mod.vueConsole(s.etat) };
 }
+
+/**
+ * Fait jouer les IA tant que ce sont elles qu'on attend. Les actions de plusieurs IA dans une même phase
+ * sont enchaînées en mémoire puis sauvegardées en UNE transition (une seule écriture, une seule diffusion).
+ * À appeler après chaque démarrage, action ou tick. Retourne le nombre d'actions jouées.
+ */
+export async function jouerIA(deps: Deps, salonId: string): Promise<number> {
+  let total = 0;
+  for (let tour = 0; tour < 80; tour++) {
+    const s = await deps.depot.charger(salonId);
+    if (!s || s.etat === null || s.etat === undefined) break;
+    const mod = obtenirModule(s.jeuCode);
+    if (!mod.ia || mod.resultat(s.etat)) break;
+    const bots = new Set((await deps.depot.joueurs(salonId)).filter((j) => j.ia).map((j) => j.id));
+    if (bots.size === 0) break;
+
+    let etat = s.etat;
+    const evenements: Evenement[] = [];
+    let agi = 0;
+    for (let i = 0; i < 500 && !mod.resultat(etat); i++) {
+      const attendus = mod.attente(etat).attendus.filter((id) => bots.has(id));
+      let joue = false;
+      for (const id of attendus) {
+        const rng = creerRng(`${salonId}:ia:${s.version}:${i}:${id}`);
+        const action = mod.ia(etat, id, rng);
+        if (!action || !mod.valider(etat, id, action).ok) continue; // IA sans action valable : on essaie la suivante
+        const t = mod.appliquer(etat, id, action, rng);
+        etat = t.etat;
+        evenements.push(...t.evenements);
+        agi++;
+        joue = true;
+        break;
+      }
+      if (!joue) break;
+    }
+    if (agi === 0) break;
+    try {
+      await persister(deps, salonId, mod, s, { etat, evenements });
+    } catch (e) {
+      if (e instanceof ErreurJeu && e.code === 'conflit') continue; // un humain a joué entre-temps : on recalcule
+      throw e;
+    }
+    total += agi;
+  }
+  return total;
+}

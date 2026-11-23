@@ -21,6 +21,8 @@ export interface JoueurLG {
   secret: Record<string, any>;
   roleRevele: boolean;
   causeMort?: string;
+  /** Joueur IA (révélé en fin de partie seulement). */
+  ia?: boolean;
 }
 
 export type Decision =

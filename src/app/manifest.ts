@@ -1,9 +1,11 @@
 import type { MetadataRoute } from 'next';
 
+import { NOM_PLATEFORME } from '@/lib/marque';
+
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Ravensburg',
-    short_name: 'Ravensburg',
+    name: NOM_PLATEFORME,
+    short_name: NOM_PLATEFORME,
     description: 'Jeux de société à secrets : une console, des téléphones.',
     start_url: '/jouer',
     display: 'standalone',

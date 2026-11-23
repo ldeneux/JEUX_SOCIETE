@@ -110,7 +110,7 @@ export function vueConsoleLG(d: EtatLG): VueConsole {
       pseudo: j.pseudo,
       place: j.place,
       vivant: j.vivant,
-      badges: [j.maire ? 'maire' : '', j.roleRevele ? parCode(j.role).nom : '', j.statuts.includes('gracie') ? 'gracié' : ''].filter(Boolean),
+      badges: [j.maire ? 'maire' : '', j.roleRevele ? parCode(j.role).nom : '', j.statuts.includes('gracie') ? 'gracié' : '', d.phase === 'fin' && j.ia ? '🤖' : ''].filter(Boolean),
     })),
     donnees: {
       nuit: d.nuit,

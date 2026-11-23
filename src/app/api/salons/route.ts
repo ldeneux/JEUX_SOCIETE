@@ -14,6 +14,8 @@ export async function POST(req: Request) {
     try { mod = obtenirModule(String(jeu)); } catch { throw new ErreurHttp(400, 'Jeu indisponible'); }
     if (!mod.manifeste.modes.some((m) => m.code === mode)) throw new ErreurHttp(400, 'Mode inconnu');
     mod.configSchema.parse(options ?? {}); // échoue tôt si les options sont invalides
+    const ia = options?.ia ?? 0;
+    if (!(Number.isInteger(ia) && ia >= 0 && ia <= mod.manifeste.joueurs.max)) throw new ErreurHttp(400, 'Nombre de joueurs IA invalide');
 
     for (let essai = 0; essai < 5; essai++) {
       const { data, error } = await sb

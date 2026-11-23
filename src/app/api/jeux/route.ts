@@ -7,7 +7,7 @@ export function GET() {
   return Response.json({
     jeux: [
       ...catalogue().map((m) => ({ ...m, statut: 'jouable' })),
-      { code: 'manoir', nom: 'Meurtre au manoir', description: 'Enquête et déduction dans un manoir.', visuel: '', joueurs: { min: 3, max: 6 }, dureeMinutes: 60, modes: [], options: [], statut: 'en_construction' },
+      { code: 'archives', nom: 'CLUEDO : LES ARCHIVES DU TEMPS', description: 'Un artefact a disparu des Archives du Temps. Enquêtez à travers les civilisations pour démasquer le coupable.', visuel: '/archives/fond.webp', joueurs: { min: 2, max: 6 }, dureeMinutes: 60, modes: [], options: [], statut: 'en_construction' },
     ],
   });
 }

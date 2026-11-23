@@ -57,7 +57,7 @@ export function useVue<V>(code: string, cible: 'console' | 'joueur') {
   return { ...d, rafraichir };
 }
 
-export interface JoueurSalon { id: string; pseudo: string; place: number }
+export interface JoueurSalon { id: string; pseudo: string; place: number; est_ia?: boolean }
 export interface InfosSalon { id: string; statut: string; jeu_code: string; mode: string; options: Record<string, any>; hote_id: string }
 
 /** Salon + liste des joueurs en temps réel (salle d'attente et correspondance id -> pseudo). */
@@ -74,7 +74,7 @@ export function useSalon(code: string) {
       if (!actif) return;
       if (!s) return setErreur('Salon introuvable ou accès refusé');
       setSalon(s as InfosSalon);
-      const { data: j } = await sb().from('plateforme_joueurs').select('id,pseudo,place').eq('salon_id', s.id).order('place');
+      const { data: j } = await sb().from('plateforme_joueurs').select('id,pseudo,place,est_ia').eq('salon_id', s.id).order('place');
       if (actif) setJoueurs((j ?? []) as JoueurSalon[]);
       canal = sb()
         .channel(`salon:${s.id}`)
@@ -89,7 +89,7 @@ export function useSalon(code: string) {
       const { data: s } = await sb().from('plateforme_salons').select('*').eq('code', code).maybeSingle();
       if (s && actif) {
         setSalon(s as InfosSalon);
-        const { data: j } = await sb().from('plateforme_joueurs').select('id,pseudo,place').eq('salon_id', s.id).order('place');
+        const { data: j } = await sb().from('plateforme_joueurs').select('id,pseudo,place,est_ia').eq('salon_id', s.id).order('place');
         if (actif) setJoueurs((j ?? []) as JoueurSalon[]);
       }
     }, 8000);

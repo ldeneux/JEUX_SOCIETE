@@ -16,6 +16,9 @@ export async function PATCH(req: Request, { params }: Params) {
     const mod = obtenirModule(salon.jeu_code);
     if (mode && !mod.manifeste.modes.some((m) => m.code === mode)) throw new ErreurHttp(400, 'Mode inconnu');
     if (options) mod.configSchema.parse(options);
+    if (options?.ia !== undefined && !(Number.isInteger(options.ia) && options.ia >= 0 && options.ia <= mod.manifeste.joueurs.max)) {
+      throw new ErreurHttp(400, 'Nombre de joueurs IA invalide');
+    }
     const { error } = await sb.from('plateforme_salons').update({ ...(mode && { mode }), ...(options && { options }) }).eq('id', salon.id);
     if (error) throw error;
   });

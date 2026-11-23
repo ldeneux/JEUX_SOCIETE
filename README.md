@@ -1,76 +1,79 @@
-# 🌕 Ravensburg
+# 🌕 Jeux à secrets
 
-Jeux de société à information cachée : **une console au centre** (TV / ordinateur) et **un téléphone par joueur**.
-Premier jeu : **Ravensburg** (Loup-garou, 29 rôles, dont le Comte Dracula). Prochain : *Meurtre au manoir*.
+Plateforme de jeux de société à information cachée : **une console au centre** (TV / ordinateur) et **un téléphone par joueur**.
+
+| Jeu | État |
+|---|---|
+| **LOUPS-GAROUS : ÉDITION RAVENSBURG** — 29 rôles dont le Comte Dracula, 5 modes, joueurs IA | ✅ jouable |
+| **CLUEDO : LES ARCHIVES DU TEMPS** — enquêtes générées à travers les civilisations | 🚧 en construction (GDD et visuels dans `docs/archives-du-temps/`) |
 
 Stack : **Next.js 16** (App Router) · **Supabase** (Postgres, Auth, Realtime) · **Vercel**.
+Le nom de la plateforme se change en un seul endroit : `src/lib/marque.ts`.
 
 ## Déploiement en 6 étapes
 
-1. **Pousse ce dossier sur Git** (GitHub/GitLab) et importe le dépôt dans Vercel (framework détecté : Next.js).
-2. **Base de données** — dans Supabase > SQL Editor, exécute `supabase/migrations/20260101000000_jeux_ravensburg.sql`.
-   Tout est créé dans le **schéma `jeux`** ; les tables communes sont préfixées `plateforme_`, celles du jeu `loupgarou_`.
-   Rien n'est touché dans `public`.
-3. **Expose le schéma** — Supabase > Settings > API > *Exposed schemas* : ajoute **`jeux`**.
-4. **Connexions anonymes** — Supabase > Authentication > Sign In / Providers : active **Allow anonymous sign-ins**
-   (c'est ce qui permet aux téléphones de jouer sans compte). Tes comptes existants servent à l'hôte de la console.
-5. **Variables d'environnement Vercel** (voir `.env.example`) :
-   `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (secret, jamais `NEXT_PUBLIC_`), `CRON_SECRET` (facultatif).
-6. **Déploie**, ouvre `/console`, connecte-toi (ou « continuer sans compte »), crée un salon, scanne le QR code avec un téléphone.
+1. **Pousse ce dossier sur Git** et importe le dépôt dans Vercel (Next.js détecté).
+2. **Base de données** — Supabase > SQL Editor, exécute **dans l'ordre** :
+   `supabase/migrations/20260101000000_jeux_ravensburg.sql` puis `20260102000000_ia_et_renommage.sql`
+   (si la première est déjà exécutée, lance seulement la seconde).
+   Tout vit dans le **schéma `jeux`** ; tables communes préfixées `plateforme_`, tables d'un jeu préfixées par son code (`loupgarou_`, plus tard `archives_`). Rien n'est touché dans `public`.
+3. **Expose le schéma** — Settings > API > *Exposed schemas* : ajoute **`jeux`**.
+4. **Connexions anonymes** — Authentication > Sign In / Providers : active **Allow anonymous sign-ins** (les téléphones jouent sans compte ; tes comptes existants servent à l'hôte).
+5. **Variables Vercel** (voir `.env.example`) : `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (secret, jamais `NEXT_PUBLIC_`), `CRON_SECRET` (facultatif).
+6. **Déploie**, ouvre `/console`, crée un salon.
 
-> Conseil : choisis pour Vercel une région proche de ton projet Supabase (Settings > Functions > Region), pour des actions plus rapides.
+> Pas besoin d'amis pour tester : dans la salle d'attente, **« Compléter avec des joueurs IA »** suffit pour lancer une partie seul (ou même 100 % IA, en spectateur).
+
+## Joueurs IA
+
+- Choisis le nombre d'IA à la création du salon ou dans la salle d'attente (− / +), sans limite autre que le maximum du jeu (30 pour Loups-garous). Tu peux dépasser le minimum pour corser la partie.
+- **Les humains sont prioritaires** : ils sont servis en premier dans la distribution des rôles, et si la table est trop petite ce sont les IA en trop qui sont retirées.
+- Prénoms aléatoires, uniques, jamais ceux des humains (accents et casse ignorés). Les IA sont discernables seulement à la fin de partie (🤖).
+- Elles **ne trichent pas** : elles n'utilisent que leur rôle, leurs alliés connus et ce que leur Voyante a appris. Loups ne votent pas leurs frères, serviteurs de Dracula protègent le Comte, amoureux s'épargnent, etc.
+- Techniquement : lignes `plateforme_joueurs` avec `est_ia = true` et sans compte ; `jouerIA()` (dans `moteur.ts`) joue pour elles après chaque démarrage, action ou tick, en une seule écriture par phase.
 
 ## Les minuteurs (important)
 
-Il n'y a pas de serveur permanent. La **console** déclenche `POST /api/salons/[code]/tick` à chaque échéance
-(idempotent, protégé par un verrou de version). Si la console est fermée, la partie attend.
-Filet de sécurité : appelle `GET /api/cron/tick` chaque minute avec `Authorization: Bearer $CRON_SECRET`
-(Supabase `pg_cron` + `pg_net`, cron-job.org, GitHub Actions…). Vercel Cron en offre Hobby est limité à 1 appel/jour, il ne suffit pas.
+Pas de serveur permanent. La **console** déclenche `POST /api/salons/[code]/tick` à chaque échéance (idempotent, verrou de version). Console fermée = la partie attend.
+Filet de sécurité : `GET /api/cron/tick` chaque minute avec `Authorization: Bearer $CRON_SECRET` (Supabase `pg_cron` + `pg_net`, cron-job.org, GitHub Actions…). Vercel Cron en offre Hobby est limité à 1 appel/jour : insuffisant seul.
 
 ## Architecture
 
 ```
-src/lib/jeux/contract.ts        contrat d'un module de jeu (fonctions pures)
-src/lib/jeux/moteur.ts          moteur générique : état -> module -> sauvegarde (CAS) -> diffusion
+src/lib/jeux/contract.ts        contrat d'un module de jeu (fonctions pures, IA optionnelle)
+src/lib/jeux/moteur.ts          moteur générique : état -> module -> sauvegarde (CAS) -> diffusion ; jouerIA
 src/lib/jeux/registre.ts        ajouter un jeu = un dossier + une ligne ici
-src/lib/jeux/loupgarou/         Ravensburg : rôles, générateur de composition, déroulé, vues, simulateur
+src/lib/jeux/loupgarou/         rôles, générateur de composition, déroulé, vues, IA, simulateur
 src/lib/serveur/                dépôt Supabase, diffusion (table plateforme_vues), helpers d'API
-src/app/api/                    routes : salons, rejoindre, démarrer, action, tick, vue, cron
-src/app/console/                console de l'hôte (QR code, table ronde, narration vocale)
-src/app/jouer/                  téléphone (rejoindre, écran de jeu, carte secrète)
+src/app/api/                    salons, rejoindre, démarrer, action, tick, vue, cron
+src/app/console/  src/app/jouer/  src/app/roles/   console, téléphone, grimoire des 29 rôles
 supabase/migrations/            schéma `jeux`
 ```
 
-**Sécurité** : l'état complet (rôles, secrets) vit dans `jeux.plateforme_etats`, accessible **uniquement** par le serveur
-(RLS sans policy). Chaque écran lit sa propre ligne de `jeux.plateforme_vues` (RLS : `user_id = auth.uid()`),
-alimentée par `vueJoueur()`, qui ne contient que ce que ce joueur a le droit de savoir. Aucun client n'écrit : tout passe par `/api`.
+**Sécurité** : l'état complet (rôles, secrets) vit dans `jeux.plateforme_etats`, lisible **uniquement** par le serveur (RLS sans policy). Chaque écran lit sa propre ligne de `jeux.plateforme_vues` (RLS `user_id = auth.uid()`), alimentée par `vueJoueur()` qui ne contient que ce que ce joueur peut savoir. Aucun client n'écrit : tout passe par `/api`.
 
 ## Développement
 
 ```bash
 npm install
-cp .env.example .env.local   # renseigne les 3 clés Supabase
-npm run dev                  # http://localhost:3000
-npm test                     # 22 tests : composition, parties simulées par bots, moteur
-npm run seed:roles           # régénère le SQL des rôles depuis roles.ts (source de vérité)
+cp .env.example .env.local     # 3 clés Supabase
+npm run dev                    # http://localhost:3000
+npm test                       # 28 tests : composition, 1 280 parties simulées, moteur, IA
+npm run seed:roles             # régénère le SQL des rôles depuis roles.ts (source de vérité)
 ```
 
-Pour ajouter / modifier un rôle : `src/lib/jeux/loupgarou/roles.ts` (poids, score, ordre de nuit), une étape dans
-`etapes.ts` ou `etapes-speciales.ts` si le rôle se réveille, et `roles-info.ts` pour les textes. Les tests de simulation
-jouent chaque rôle du catalogue.
+Ajouter / modifier un rôle : `src/lib/jeux/loupgarou/roles.ts` (poids, score, ordre de nuit), une étape dans `etapes.ts` / `etapes-speciales.ts` s'il se réveille, `roles-info.ts` pour les textes. Les simulations jouent chaque rôle.
 
 ## Cartes illustrées
 
-21 rôles sur 29 ont leur carte (`public/ravensburg/cartes/<code>.webp`, 640×960). Sans image, une carte « grimoire »
-(emoji + nom) est générée. Cartes manquantes : medium, juge, servante, comedien, infect, grand_mechant_loup, dracula, chien_loup.
-Dépose simplement `<code>.webp` et ajoute le code dans `CARTES_ILLUSTREES` (`roles-info.ts`).
+**29 rôles sur 29** ont leur carte (`public/ravensburg/cartes/<code>.webp`, 640×960). Un rôle sans image reçoit une carte « grimoire » générée.
+Remplacer une carte = déposer `<code>.webp` au même nom. La carte « Loups-garous » (menhir à la patte lumineuse) est celle du Loup-garou ; l'ancienne carte très agressive illustre désormais le **Grand Méchant Loup**.
 
 ## Limites connues
 
-- Le chemin Supabase (PostgREST + Realtime) n'a pas pu être exercé de bout en bout depuis l'environnement de génération :
-  la migration et la RLS ont été testées sur PostgreSQL 16, le moteur sur un dépôt en mémoire, le front par `next build`.
-  Fais une première partie à 3-4 téléphones avant d'inviter tout le monde.
+- Le chemin Supabase (PostgREST + Realtime) n'a pas pu être exercé de bout en bout depuis l'environnement de génération : migrations et RLS testées sur PostgreSQL 16, moteur sur un dépôt en mémoire, front par `next build` + `next start`. Fais une première partie avant d'inviter tout le monde.
 - Le rythme d'une nuit peut laisser deviner qu'un rôle est mort ou absent ; `leurreSecondes` atténue sans supprimer ce biais.
+- Les IA jouent « raisonnablement » mais pas finement : elles ne débattent pas (le débat reste humain).
 - Les vues sont écrites après le verrou d'état ; en cas de course très rare, le polling (6 s) resynchronise l'écran.
 
 Règles détaillées : `docs/REGLES.md`.

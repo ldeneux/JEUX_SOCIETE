@@ -2,12 +2,13 @@ import type { Metadata, Viewport } from 'next';
 import '@fontsource/cinzel/600.css';
 import '@fontsource/cinzel/700.css';
 import './globals.css';
+import { ACCROCHE, NOM_PLATEFORME } from '@/lib/marque';
 
 export const metadata: Metadata = {
-  title: { default: 'Ravensburg — jeux de société à secrets', template: '%s · Ravensburg' },
-  description: 'Une console au centre, un téléphone par joueur : Ravensburg, le Loup-garou où une fenêtre s’illumine chaque nuit au château Corvin.',
-  applicationName: 'Ravensburg',
-  appleWebApp: { capable: true, title: 'Ravensburg', statusBarStyle: 'black-translucent' },
+  title: { default: `${NOM_PLATEFORME} — jeux de société à secrets`, template: `%s · ${NOM_PLATEFORME}` },
+  description: `${ACCROCHE} Loups-garous édition Ravensburg, et bientôt Cluedo : les Archives du Temps.`,
+  applicationName: NOM_PLATEFORME,
+  appleWebApp: { capable: true, title: NOM_PLATEFORME, statusBarStyle: 'black-translucent' },
   formatDetection: { telephone: false },
 };
 

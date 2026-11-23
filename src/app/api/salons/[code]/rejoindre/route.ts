@@ -19,6 +19,7 @@ export async function POST(req: Request, { params }: Params) {
     if (salon.statut !== 'attente') throw new ErreurHttp(409, 'La partie a déjà commencé');
 
     const max = obtenirModule(salon.jeu_code).manifeste.joueurs.max;
+    // Les humains sont prioritaires : une place réservée à une IA est reprise par l'humain qui arrive.
     if ((joueurs?.length ?? 0) >= max) throw new ErreurHttp(409, `Salon complet (${max} joueurs)`);
     const place = Math.max(-1, ...(joueurs ?? []).map((j: { place: number }) => j.place)) + 1;
 

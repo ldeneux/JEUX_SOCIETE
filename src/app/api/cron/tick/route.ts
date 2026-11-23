@@ -1,5 +1,5 @@
 import { tick } from '@/lib/jeux/moteur';
-import { creerDeps, finaliserSiBesoin, repondre, sbService, type Salon } from '@/lib/serveur/api';
+import { apresTransition, creerDeps, repondre, sbService, type Salon } from '@/lib/serveur/api';
 import { ErreurHttp } from '@/lib/serveur/supabase';
 
 export const dynamic = 'force-dynamic';
@@ -21,8 +21,7 @@ export async function GET(req: Request) {
       if (!salon || salon.statut !== 'en_cours') continue;
       if (await tick(creerDeps(sb, salon as Salon), salon_id)) {
         avances++;
-        const { data: e } = await sb.from('plateforme_etats').select('etat').eq('salon_id', salon_id).maybeSingle();
-        if (e) await finaliserSiBesoin(sb, salon as Salon, e.etat);
+        await apresTransition(sb, salon as Salon);
       }
     }
     return { avances };

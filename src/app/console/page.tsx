@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { Nav } from '@/components/Nav';
 import { appeler, session } from '@/lib/client/api';
 import { sb } from '@/lib/client/supabase';
+import { CompteurIA } from '@/components/CompteurIA';
 
 interface Manifeste {
   code: string; nom: string; description: string; statut: string;
@@ -23,6 +24,7 @@ export default function Console() {
   const [mdp, setMdp] = useState('');
   const [erreur, setErreur] = useState('');
   const [occupe, setOccupe] = useState(false);
+  const [ia, setIa] = useState(0);
 
   useEffect(() => {
     session(false).then((s) => setConnecte(!!s));
@@ -57,7 +59,7 @@ export default function Console() {
     if (!jeu) return;
     setErreur(''); setOccupe(true);
     try {
-      const r = await appeler<{ code: string }>('/api/salons', { corps: { jeu: jeu.code, mode, options: opts } });
+      const r = await appeler<{ code: string }>('/api/salons', { corps: { jeu: jeu.code, mode, options: { ...opts, ia } } });
       router.push(`/console/${r.code}`);
     } catch (e) {
       setErreur((e as Error).message);
@@ -102,6 +104,10 @@ export default function Console() {
                   <strong>{m.nom}</strong><small>{m.description}</small>
                 </button>
               ))}
+            </div>
+            <div className="ligne-ia">
+              <div><strong>Joueurs IA</strong><small>Complètent la table. Les humains sont toujours prioritaires ; 0 pour jouer entre humains.</small></div>
+              <CompteurIA valeur={ia} max={jeu.joueurs.max} onChange={setIa} />
             </div>
             <details>
               <summary style={{ cursor: 'pointer', color: 'var(--or-clair)', marginBottom: '.6rem' }}>Options de la partie</summary>

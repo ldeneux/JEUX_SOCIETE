@@ -38,5 +38,5 @@ export const ROLES_INFO: Record<string, RoleInfo> = {
 
 export const CAMPS: Record<string, string> = { village: 'Village', loups: 'Loups-garous', solo: 'Solitaire' };
 
-/** Cartes illustrées disponibles dans /public/ravensburg/cartes (les autres rôles ont une carte "grimoire" générée). */
-export const CARTES_ILLUSTREES = new Set(["ancien", "ange", "aubergiste", "bouc_emissaire", "chasseur", "corbeau", "cupidon", "enfant_sauvage", "idiot", "joueur_flute", "loup_blanc", "loup_garou", "montreur_ours", "petite_fille", "pyromane", "renard", "salvateur", "sorciere", "villageois", "voleur", "voyante"]);
+/** Cartes illustrées disponibles dans /public/ravensburg/cartes (un rôle sans image reçoit une carte "grimoire" générée). */
+export const CARTES_ILLUSTREES = new Set(["ancien", "ange", "aubergiste", "bouc_emissaire", "chasseur", "chien_loup", "comedien", "corbeau", "cupidon", "dracula", "enfant_sauvage", "grand_mechant_loup", "idiot", "infect", "joueur_flute", "juge", "loup_blanc", "loup_garou", "medium", "montreur_ours", "petite_fille", "pyromane", "renard", "salvateur", "servante", "sorciere", "villageois", "voleur", "voyante"]);

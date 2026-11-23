@@ -54,7 +54,10 @@ POUVOIRS.voyante = {
   cibles: (d, a) => vivants(d).filter((j) => j.id !== a.id),
   appliquer(c, a, cible) {
     if (cible.statuts.includes('heberge')) info(c, a, 'Vision', `${cible.pseudo} est introuvable cette nuit.`);
-    else info(c, a, 'Vision', `${cible.pseudo} est ${parCode(cible.role).nom}.`);
+    else {
+      info(c, a, 'Vision', `${cible.pseudo} est ${parCode(cible.role).nom}.`);
+      (a.secret.connus ??= {})[cible.id] = cible.role; // mémoire de la Voyante (sert aux IA)
+    }
   },
 };
 

@@ -56,7 +56,7 @@ export function PlateauConsole({ vue, secondes }: { vue: VueConsole; secondes: n
           <div className="fin-roles">
             {roles.map((r) => {
               const j = joueurs.find((x) => x.id === r.id);
-              return <div key={r.id} className={gagnants.has(r.id) ? 'gagnant' : ''}>{gagnants.has(r.id) ? '🏆 ' : ''}{j?.pseudo} : {r.nom}</div>;
+              return <div key={r.id} className={gagnants.has(r.id) ? 'gagnant' : ''}>{gagnants.has(r.id) ? '🏆 ' : ''}{j?.pseudo}{j?.badges.includes('🤖') ? ' 🤖' : ''} : {r.nom}</div>;
             })}
           </div>
           <div style={{ display: 'flex', gap: '.5rem', justifyContent: 'center', flexWrap: 'wrap', marginTop: '1rem' }}>
