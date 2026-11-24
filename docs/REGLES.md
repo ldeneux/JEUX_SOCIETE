@@ -27,3 +27,7 @@ Nuit (réveils par ordre) → matin (annonce des morts) → décisions (Chasseur
 - **Ange** : gagne s'il est éliminé au premier vote.
 - **Joueur de flûte** : gagne quand tous les autres vivants sont enchantés. **Pyromane** : dernier survivant. **Loup blanc** : seul contre tous.
 - **Montreur d'ours** : vibration du téléphone chaque matin si un voisin vivant est loup (infectés compris, corrompus non).
+
+## Joueurs IA
+Les IA remplissent la table (humains prioritaires). Elles jouent comme un joueur sans pouvoir particulier : leur rôle, leurs alliés connus
+et leurs propres informations (visions de la Voyante) uniquement. Elles confirment immédiatement « prêt à voter » et votent sans débattre.

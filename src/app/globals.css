@@ -195,3 +195,4 @@ input:focus { outline: 2px solid var(--or); outline-offset: 1px; }
 .ligne-ia { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; padding: .8rem 0; border-top: 1px solid rgba(255,255,255,.08); border-bottom: 1px solid rgba(255,255,255,.08); margin: 1rem 0; }
 .ligne-ia small { display: block; color: var(--doux); max-width: 340px; }
 .total-table { font-family: var(--titre); color: var(--or-clair); font-size: 1.05rem; margin: .4rem 0 0; }
+.banniere.eldoria { background-position: center; }

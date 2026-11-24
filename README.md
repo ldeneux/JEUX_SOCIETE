@@ -6,6 +6,7 @@ Plateforme de jeux de société à information cachée : **une console au centre
 |---|---|
 | **LOUPS-GAROUS : ÉDITION RAVENSBURG** — 29 rôles dont le Comte Dracula, 5 modes, joueurs IA | ✅ jouable |
 | **CLUEDO : LES ARCHIVES DU TEMPS** — enquêtes générées à travers les civilisations | 🚧 en construction (GDD et visuels dans `docs/archives-du-temps/`) |
+| **ELDORIA : LES ROYAUMES BRISÉS** — jeu de cartes de conquête et d'objectifs secrets, 2–5 joueurs | 🚧 en construction (fiche projet dans `docs/eldoria/`) |
 
 Stack : **Next.js 16** (App Router) · **Supabase** (Postgres, Auth, Realtime) · **Vercel**.
 Le nom de la plateforme se change en un seul endroit : `src/lib/marque.ts`.

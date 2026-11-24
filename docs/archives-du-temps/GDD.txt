@@ -1,0 +1,272 @@
+LES ARCHIVES DU TEMPS
+GAME DESIGN DOCUMENT (VERSION CLAUDE)
+
+====================================================
+1. VISION DU PROJET
+====================================================
+
+Les Archives du Temps est un jeu d’enquête multijoueur inspiré du Cluedo, d’Indiana Jones, de Tomb Raider et d’Uncharted.
+
+Le jeu repose sur une idée simple : un artefact historique a disparu des Archives du Temps, une organisation secrète chargée de protéger les objets les plus importants de l’Histoire.
+
+Les joueurs doivent enquêter, explorer, interroger des PNJ, collecter des indices et formuler des hypothèses afin de découvrir la vérité.
+
+Contrairement au Cluedo classique :
+- il n'y a pas nécessairement de meurtre ;
+- les enquêtes sont générées dynamiquement ;
+- les motivations changent ;
+- les suspects changent ;
+- les artefacts changent ;
+- les indices changent.
+
+Objectif principal : créer un jeu hautement rejouable où chaque partie raconte une nouvelle aventure.
+
+====================================================
+2. UNIVERS
+====================================================
+
+Les Archives du Temps sont un immense complexe hors du temps.
+
+L'organisation protège les reliques les plus importantes jamais créées par l'humanité.
+
+Chaque aile des Archives est consacrée à une civilisation.
+
+Zones principales :
+- Égypte Antique
+- Grèce Antique
+- Empire Romain
+- Civilisation Maya
+- Moyen Âge
+- Renaissance
+- Révolution Industrielle
+- Futur
+
+Ces lieux sont accessibles via une grande carte mondiale servant de hub principal.
+
+====================================================
+3. BOUCLE DE JEU
+====================================================
+
+1. Génération de l'enquête
+2. Exploration
+3. Collecte d'indices
+4. Déduction
+5. Accusation finale
+6. Résolution
+
+Une enquête est générée à partir de :
+- un artefact disparu ;
+- un suspect ;
+- un lieu ;
+- un mobile ;
+- une série d'indices.
+
+====================================================
+4. STRUCTURE D'UNE ENQUÊTE
+====================================================
+
+Le système choisit aléatoirement :
+
+ARTEFACT
+Exemples :
+- Sceptre des Pharaons
+- Cristal Maya
+- Couronne Impériale
+- Grimoire Astral
+- Boussole Temporelle
+- Clé de Babylone
+- Fragment Atlantéen
+- Mécanisme d'Anticythère
+
+SUSPECT
+Exemples :
+- Conservateur
+- Archéologue
+- Explorateur
+- Collectionneur
+- Agent Temporel
+- Historienne
+
+LIEU
+Exemples :
+- Temple Égyptien
+- Bibliothèque Grecque
+- Forge Médiévale
+- Observatoire Maya
+- Laboratoire Futuriste
+
+MOBILE
+Exemples :
+- Appât du gain
+- Recherche du pouvoir
+- Vengeance
+- Protection de l'Histoire
+- Empêcher une catastrophe temporelle
+- Falsification du passé
+
+====================================================
+5. PERSONNAGES JOUBALES
+====================================================
+
+MVP : 6 personnages.
+Objectif final : 20 personnages.
+
+ARCHÉOLOGUE
+Bonus de découverte d'artefacts.
+
+HISTORIENNE
+Bonus sur les documents.
+
+EXPLORATEUR
+Déplacements améliorés.
+
+CARTOGRAPHE
+Révèle des zones cachées.
+
+CONSERVATEUR
+Analyse d'objets.
+
+AGENT TEMPOREL
+Détection d'anomalies.
+
+====================================================
+6. PNJ
+====================================================
+
+Les PNJ distribuent indices, quêtes secondaires et contexte narratif.
+
+- Archiviste Principal
+- Conservateur Général
+- Gardien des Archives
+- Cartographe
+- Voyageur Temporel
+- Forgeron Temporel
+- Conservatrice Égyptienne
+- Bibliothécaire Antique
+
+====================================================
+7. ARTEFACTS
+====================================================
+
+Version MVP : 10 artefacts.
+Version cible : 50+.
+
+Chaque artefact possède :
+- nom ;
+- civilisation ;
+- rareté ;
+- description ;
+- histoire ;
+- indice associé.
+
+====================================================
+8. MODES DE JEU
+====================================================
+
+MODE 1 : ENQUÊTE CLASSIQUE
+Premier joueur à trouver la solution.
+
+MODE 2 : COOPÉRATION
+Les joueurs résolvent ensemble l'affaire.
+
+MODE 3 : TRAÎTRE CACHÉ
+Un joueur tente de saboter l'enquête.
+
+MODE 4 : COURSE CONTRE LE TEMPS
+Temps limité.
+
+MODE 5 : ARCHIVES VIVANTES
+Événements dynamiques modifiant l'enquête.
+
+====================================================
+9. CARTE PRINCIPALE
+====================================================
+
+Vue isométrique premium.
+
+Bâtiments principaux :
+- Temple Égyptien
+- Acropole Grecque
+- Forum Romain
+- Observatoire Maya
+- Citadelle Médiévale
+- Palais Renaissance
+- Complexe Industriel
+- Centre Quantique
+
+Style visuel inspiré de :
+- Tomb Raider
+- Uncharted
+- Indiana Jones
+
+====================================================
+10. INTERFACE UTILISATEUR
+====================================================
+
+Références :
+- Hearthstone
+- Legends of Runeterra
+- Cartoria Realms
+
+Principes :
+- immersion maximale ;
+- illustrations grand format ;
+- navigation simple ;
+- carnet d'enquête accessible en permanence.
+
+====================================================
+11. TECHNIQUE
+====================================================
+
+Frontend : Next.js
+Backend : Supabase
+Authentification : Supabase Auth
+Temps réel : Supabase Realtime
+Hébergement : Vercel
+
+====================================================
+12. MODÈLE DE DONNÉES SUPABASE
+====================================================
+
+Tables principales :
+
+users
+profiles
+games
+game_players
+characters
+pnjs
+artifacts
+locations
+clues
+investigations
+investigation_clues
+accusations
+chat_messages
+
+====================================================
+13. MVP V1
+====================================================
+
+Fonctionnalités :
+- Connexion joueur
+- Création de partie
+- Rejoindre une partie
+- Carte principale
+- 6 personnages
+- 6 PNJ
+- 10 artefacts
+- Génération procédurale d'enquête
+- Carnet d'indices
+- Système d'accusation
+- Écran de victoire
+
+====================================================
+14. VISION LONG TERME
+====================================================
+
+Les Archives du Temps doit devenir une plateforme d'enquêtes génératives où chaque partie raconte une histoire différente.
+
+Le joueur ne résout pas simplement une énigme.
+
+Il voyage à travers les grandes civilisations de l'Histoire afin de préserver la mémoire du monde.

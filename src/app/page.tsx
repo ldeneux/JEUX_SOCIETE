@@ -55,6 +55,21 @@ export default function Accueil() {
                 <div><button className="btn" disabled>Bientôt disponible</button></div>
               </div>
             </article>
+
+            <article className="banniere eldoria" style={{ backgroundImage: 'url(/eldoria/fond.webp)' }}>
+              <span className="badge badge-bientot coin">En construction</span>
+              <div className="contenu">
+                <h3>ELDORIA : LES ROYAUMES BRISÉS</h3>
+                <p>Douze cristaux, cinq royaumes, des objectifs secrets et une ombre qui dévore le monde. Explorez, conquérez, intriguez — et gardez un œil sur le trône.</p>
+                <div className="rang">
+                  <span className="puce">2–5 joueurs</span>
+                  <span className="puce">~60 min</span>
+                  <span className="puce">Jeu de cartes</span>
+                  <span className="puce">Objectifs secrets</span>
+                </div>
+                <div><button className="btn" disabled>Bientôt disponible</button></div>
+              </div>
+            </article>
           </div>
         </section>
 
