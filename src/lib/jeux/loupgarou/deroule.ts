@@ -10,6 +10,7 @@ import {
   annoncer, campEffectif, choisirJoueurs, info, joueur, prive, pub, victoire, vivants, voisins, votants,
   type Ctx, type Decision, type EtatLG, type JoueurLG,
 } from './etat';
+import { validerValeur } from '../descripteurs';
 import { ETAPES, promptsRestants, type Etape } from './etapes';
 import './etapes-speciales'; // étape 2 : rôles spéciaux
 
@@ -119,24 +120,6 @@ export function descripteursLG(d: EtatLG, j: JoueurLG): Descripteur[] {
       return d.decisions[0].acteur === j.id ? [descripteurDecision(d, d.decisions[0])] : [];
     default:
       return [];
-  }
-}
-
-export function validerValeur(desc: Descripteur, v: unknown): Validation {
-  const ko = (raison: string): Validation => ({ ok: false, raison });
-  switch (desc.type) {
-    case 'joueurs': {
-      if (!Array.isArray(v) || !v.every((x) => typeof x === 'string')) return ko('Format invalide');
-      if (new Set(v).size !== v.length) return ko('Doublon');
-      if (v.length < desc.min || v.length > desc.max) return ko(`Choisis entre ${desc.min} et ${desc.max} joueur(s)`);
-      return v.every((x) => desc.candidats.includes(x)) ? { ok: true } : ko('Cible interdite');
-    }
-    case 'choix':
-      return typeof v === 'string' && desc.options.some((o) => o.valeur === v) ? { ok: true } : ko('Choix invalide');
-    case 'confirmer':
-      return v === true ? { ok: true } : ko('Confirmation attendue');
-    case 'texte':
-      return typeof v === 'string' && v.trim().length > 0 && v.length <= desc.maxLongueur ? { ok: true } : ko('Texte invalide');
   }
 }
 

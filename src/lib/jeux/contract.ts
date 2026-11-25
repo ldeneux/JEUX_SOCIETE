@@ -128,6 +128,8 @@ export interface VueJoueur {
   carte?: { code: string; nom: string }; // sa carte secrète
   secrets: { libelle: string; valeur: string }[]; // infos privées déjà acquises
   actions: Descripteur[]; // vide = rien à faire
+  /** Données privées pour un écran spécifique au jeu (ex. carnet d'enquête). */
+  donnees?: Record<string, unknown>;
 }
 
 export interface VueConsole {

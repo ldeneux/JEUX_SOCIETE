@@ -5,7 +5,9 @@ import type { VueJoueur } from '@/lib/jeux/contract';
 import { session } from '@/lib/client/api';
 import { useCompteARebours, useSalon, useVue } from '@/lib/client/hooks';
 import { Actions } from '@/components/Actions';
-import { CarteRole, DosCarte } from '@/components/CarteRole';
+import { CarteRole } from '@/components/CarteRole';
+import { CartePerso } from '@/components/CartePerso';
+import { CarnetArchives, type DonneesCarnet } from '@/components/CarnetArchives';
 import { CAMPS, ROLES_INFO } from '@/lib/jeux/loupgarou/roles-info';
 import { parCode } from '@/lib/jeux/loupgarou/roles';
 
@@ -50,6 +52,7 @@ export default function Telephone() {
   if (erreur) return <main className="tel"><div className="erreur">{erreur}</div></main>;
 
   const role = vue?.carte?.code;
+  const archives = salon?.jeu_code === 'archives';
   const urgent = secondes !== null && secondes <= 5;
 
   return (
@@ -92,19 +95,35 @@ export default function Telephone() {
           </details>
         )}
 
+        {vue && archives && vue.donnees && (
+          <details className="tiroir panneau">
+            <summary style={{ cursor: 'pointer', color: 'var(--or-clair)', fontWeight: 600 }}>📓 Carnet d’enquête · {(vue.donnees as unknown as DonneesCarnet).position}</summary>
+            <div style={{ marginTop: '.6rem' }}><CarnetArchives donnees={vue.donnees as unknown as DonneesCarnet} /></div>
+          </details>
+        )}
+
         {vue && role && (
           <div className="tel-bas">
-            <button className="btn btn-bloc" onClick={() => setCarteOuverte(true)}>🎴 Voir ma carte</button>
+            <button className="btn btn-bloc" onClick={() => setCarteOuverte(true)}>{archives ? '🕵️ Mon enquêteur' : '🎴 Voir ma carte'}</button>
           </div>
         )}
       </main>
 
       {carteOuverte && vue && role && (
         <div className="carte-modale" onClick={() => setCarteOuverte(false)} role="dialog" aria-label="Ma carte">
-          <CarteRole code={role} grande />
-          <h2 style={{ margin: 0, color: 'var(--or-clair)' }}>{parCode(role).nom}</h2>
-          <p>{ROLES_INFO[role]?.resume}</p>
-          <span className="puce">Camp d’origine : {CAMPS[parCode(role).camp]}</span>
+          {archives ? (
+            <>
+              <CartePerso code={role} grande />
+              <p>{(vue.donnees as { pouvoir?: string } | undefined)?.pouvoir}</p>
+            </>
+          ) : (
+            <>
+              <CarteRole code={role} grande />
+              <h2 style={{ margin: 0, color: 'var(--or-clair)' }}>{parCode(role).nom}</h2>
+              <p>{ROLES_INFO[role]?.resume}</p>
+              <span className="puce">Camp d’origine : {CAMPS[parCode(role).camp]}</span>
+            </>
+          )}
           <button className="btn btn-or">Cacher ma carte</button>
         </div>
       )}

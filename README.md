@@ -5,7 +5,7 @@ Plateforme de jeux de société à information cachée : **une console au centre
 | Jeu | État |
 |---|---|
 | **LOUPS-GAROUS : ÉDITION RAVENSBURG** — 29 rôles dont le Comte Dracula, 5 modes, joueurs IA | ✅ jouable |
-| **CLUEDO : LES ARCHIVES DU TEMPS** — enquêtes générées à travers les civilisations | 🚧 en construction (GDD et visuels dans `docs/archives-du-temps/`) |
+| **CLUEDO : LES ARCHIVES DU TEMPS** — enquête et déduction sur la carte du monde, 2–6 joueurs, 3 modes, joueurs IA | ✅ jouable (règles : `docs/archives-du-temps/REGLES.md`) |
 | **ELDORIA : LES ROYAUMES BRISÉS** — jeu de cartes de conquête et d'objectifs secrets, 2–5 joueurs | 🚧 en construction (fiche projet dans `docs/eldoria/`) |
 
 Stack : **Next.js 16** (App Router) · **Supabase** (Postgres, Auth, Realtime) · **Vercel**.
@@ -15,8 +15,8 @@ Le nom de la plateforme se change en un seul endroit : `src/lib/marque.ts`.
 
 1. **Pousse ce dossier sur Git** et importe le dépôt dans Vercel (Next.js détecté).
 2. **Base de données** — Supabase > SQL Editor, exécute **dans l'ordre** :
-   `supabase/migrations/20260101000000_jeux_ravensburg.sql` puis `20260102000000_ia_et_renommage.sql`
-   (si la première est déjà exécutée, lance seulement la seconde).
+   `20260101…jeux_ravensburg.sql`, `20260102…ia_et_renommage.sql`, `20260103…catalogue_eldoria.sql`, `20260104…archives_jouable.sql`
+   (dossier `supabase/migrations/` ; saute celles que tu as déjà exécutées).
    Tout vit dans le **schéma `jeux`** ; tables communes préfixées `plateforme_`, tables d'un jeu préfixées par son code (`loupgarou_`, plus tard `archives_`). Rien n'est touché dans `public`.
 3. **Expose le schéma** — Settings > API > *Exposed schemas* : ajoute **`jeux`**.
 4. **Connexions anonymes** — Authentication > Sign In / Providers : active **Allow anonymous sign-ins** (les téléphones jouent sans compte ; tes comptes existants servent à l'hôte).
@@ -44,7 +44,8 @@ Filet de sécurité : `GET /api/cron/tick` chaque minute avec `Authorization: Be
 src/lib/jeux/contract.ts        contrat d'un module de jeu (fonctions pures, IA optionnelle)
 src/lib/jeux/moteur.ts          moteur générique : état -> module -> sauvegarde (CAS) -> diffusion ; jouerIA
 src/lib/jeux/registre.ts        ajouter un jeu = un dossier + une ligne ici
-src/lib/jeux/loupgarou/         rôles, générateur de composition, déroulé, vues, IA, simulateur
+src/lib/jeux/loupgarou/         Loups-garous : rôles, générateur de composition, déroulé, vues, IA, simulateur
+src/lib/jeux/archives/          CLUEDO : plateau, cartes, règles, IA d'enquêteur, vues (console + carnet d'enquête)
 src/lib/serveur/                dépôt Supabase, diffusion (table plateforme_vues), helpers d'API
 src/app/api/                    salons, rejoindre, démarrer, action, tick, vue, cron
 src/app/console/  src/app/jouer/  src/app/roles/   console, téléphone, grimoire des 29 rôles
@@ -59,7 +60,7 @@ supabase/migrations/            schéma `jeux`
 npm install
 cp .env.example .env.local     # 3 clés Supabase
 npm run dev                    # http://localhost:3000
-npm test                       # 28 tests : composition, 1 280 parties simulées, moteur, IA
+npm test                       # 37 tests : composition, parties simulées (2 jeux), moteur, IA, rendu des écrans
 npm run seed:roles             # régénère le SQL des rôles depuis roles.ts (source de vérité)
 ```
 
@@ -74,7 +75,7 @@ Remplacer une carte = déposer `<code>.webp` au même nom. La carte « Loups-gar
 
 - Le chemin Supabase (PostgREST + Realtime) n'a pas pu être exercé de bout en bout depuis l'environnement de génération : migrations et RLS testées sur PostgreSQL 16, moteur sur un dépôt en mémoire, front par `next build` + `next start`. Fais une première partie avant d'inviter tout le monde.
 - Le rythme d'une nuit peut laisser deviner qu'un rôle est mort ou absent ; `leurreSecondes` atténue sans supprimer ce biais.
-- Les IA jouent « raisonnablement » mais pas finement : elles ne débattent pas (le débat reste humain).
+- Les IA jouent « raisonnablement » mais pas finement : aux Loups-garous elles ne débattent pas (le débat reste humain) ; aux Archives elles déduisent honnêtement mais sans bluff.
 - Les vues sont écrites après le verrou d'état ; en cas de course très rare, le polling (6 s) resynchronise l'écran.
 
 Règles détaillées : `docs/REGLES.md`.

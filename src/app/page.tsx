@@ -43,16 +43,17 @@ export default function Accueil() {
             </article>
 
             <article className="banniere archives" style={{ backgroundImage: 'url(/archives/fond.webp)' }}>
-              <span className="badge badge-bientot coin">En construction</span>
+              <span className="badge badge-ok coin">Jouable</span>
               <div className="contenu">
                 <h3>CLUEDO : LES ARCHIVES DU TEMPS</h3>
                 <p>Un artefact a disparu des Archives du Temps. Voyagez d’une civilisation à l’autre, interrogez, déduisez, accusez : chaque partie raconte une nouvelle enquête.</p>
                 <div className="rang">
                   <span className="puce">2–6 joueurs</span>
                   <span className="puce">Enquêtes générées</span>
-                  <span className="puce">5 modes de jeu</span>
+                  <span className="puce">3 modes de jeu</span>
+                  <span className="puce">🤖 IA acceptées</span>
                 </div>
-                <div><button className="btn" disabled>Bientôt disponible</button></div>
+                <div><Link href="/console" className="btn btn-or">Mener l’enquête</Link></div>
               </div>
             </article>
 

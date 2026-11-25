@@ -7,6 +7,7 @@ import { appeler, session } from '@/lib/client/api';
 import { useCompteARebours, useSalon, useVue } from '@/lib/client/hooks';
 import { PlateauConsole } from '@/components/PlateauConsole';
 import { CompteurIA } from '@/components/CompteurIA';
+import { PlateauArchives } from '@/components/PlateauArchives';
 
 export default function ConsolePartie() {
   const { code: brut } = useParams<{ code: string }>();
@@ -78,7 +79,7 @@ export default function ConsolePartie() {
       <>
         <div className="fond leger" />
         <main className="conteneur plateau">
-          <PlateauConsole vue={diff.vue} secondes={secondes} />
+          {salon?.jeu_code === 'archives' ? <PlateauArchives vue={diff.vue} secondes={secondes} /> : <PlateauConsole vue={diff.vue} secondes={secondes} />}
           <button className="btn" style={{ position: 'fixed', bottom: 'calc(.8rem + var(--bas))', left: '1rem', minHeight: 40, padding: '.4rem .9rem' }} onClick={() => { setVoix(!voix); speechSynthesis?.cancel(); }}>
             {voix ? '🔊' : '🔇'}
           </button>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Eldoria – Template de carte dynamique</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&display=swap">
+<style>
+:root{--bg:#f3efe6;--fg:#241f17;--pn:#fff;--ln:#d8d0bf;--mu:#6b6354;color-scheme:light dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15130f;--fg:#ece6d6;--pn:#201d17;--ln:#3b362b;--mu:#a39a86}}
+:root[data-theme="dark"]{--bg:#15130f;--fg:#ece6d6;--pn:#201d17;--ln:#3b362b;--mu:#a39a86}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 system-ui,sans-serif}
+main{max-width:1200px;margin:0 auto;padding:16px}
+h1{font:700 22px Cinzel,Georgia,serif;margin:0 0 4px}
+.sub{color:var(--mu);margin:0 0 16px}
+.grid{display:grid;grid-template-columns:minmax(280px,340px) 1fr;gap:20px;align-items:start}
+@media(max-width:760px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--pn);border:1px solid var(--ln);border-radius:12px;padding:14px}
+label{display:block;font-size:12px;color:var(--mu);margin:12px 0 4px}
+input,select,textarea,button{font:inherit;color:inherit;background:var(--bg);border:1px solid var(--ln);border-radius:8px;padding:7px 9px;width:100%}
+textarea{font:12px/1.4 ui-monospace,monospace;min-height:200px}
+button{cursor:pointer;width:auto;margin-top:8px}
+summary{cursor:pointer;margin-top:12px}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:18px}
+.gal .card{width:100%;cursor:pointer;transition:transform .15s}
+.gal .card:hover{transform:translateY(-3px)}
+.sel .frame{outline:3px solid #f2a31f;outline-offset:3px}
+#big .card{width:100%;max-width:320px;margin:0 auto}
+.card{container-type:inline-size;position:relative;aspect-ratio:63/88}
+.frame{position:absolute;inset:0;border-radius:5cqw;padding:3.4cqw;display:flex;flex-direction:column;gap:1.6cqw;background:linear-gradient(150deg,var(--hi),var(--m) 38%,var(--d));border:1cqw solid #0c0a07;box-shadow:0 1.6cqw 3.6cqw #0007}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:2cqw;padding:0 3cqw;border-radius:2cqw;border:.6cqw solid var(--d);background:color-mix(in srgb,var(--hi) 50%,#f3ebd5);color:#1d1810;box-shadow:inset 0 .5cqw .8cqw #fff8;flex:none}
+.head{height:10cqw}
+.nm{font-family:Cinzel,Georgia,serif;font-weight:700;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ty{height:8cqw;font:600 4.2cqw Georgia,serif}
+.g{width:7.6cqw;height:7.6cqw;border-radius:50%;display:grid;place-items:center;flex:none;font:700 5cqw Cinzel,Georgia,serif;color:#fff;background:radial-gradient(circle at 35% 30%,var(--hi),var(--m) 40%,var(--d));border:.5cqw solid var(--d)}
+.g.pr{background:radial-gradient(circle at 35% 30%,#fff3b0,#e0a41c 45%,#7a4f08);color:#3a2503}
+.art{height:52cqw;flex:none;position:relative;overflow:hidden;border-radius:1.6cqw;border:.7cqw solid var(--d);background:radial-gradient(circle at 30% 25%,var(--hi),var(--m) 55%,var(--d));box-shadow:inset 0 0 6cqw #0006}
+.art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.ph{position:absolute;inset:0;display:grid;place-items:center;font:700 22cqw Cinzel,Georgia,serif;color:#fff3}
+.rar{width:4cqw;height:4cqw;background:var(--r);transform:rotate(45deg);border:.4cqw solid #0006;border-radius:.6cqw;flex:none}
+.box{flex:1;min-height:0;overflow:hidden;border-radius:1.6cqw;padding:3cqw 3.4cqw;border:.6cqw solid var(--d);background:color-mix(in srgb,var(--hi) 20%,#f5eed9);color:#1d1810;display:flex;flex-direction:column;justify-content:center;gap:1.6cqw;font-family:Georgia,serif;line-height:1.25}
+.box p{margin:0}
+.fl{font-style:italic;font-size:.82em;opacity:.75}
+.ft{flex:none;height:4cqw;font:2.8cqw/4cqw system-ui,sans-serif;color:#fffc;text-shadow:0 .2cqw .4cqw #0009;padding-right:18cqw;white-space:nowrap;overflow:hidden}
+.pw{position:absolute;right:5cqw;bottom:4cqw;min-width:14cqw;padding:1cqw 2.5cqw;text-align:center;font:700 7cqw/1 Cinzel,Georgia,serif;color:#fff;background:linear-gradient(var(--m),var(--d));border:.7cqw solid var(--hi);border-radius:3cqw;box-shadow:0 .8cqw 1.6cqw #0007}
+.pw.df{border-radius:50% 50% 8cqw 8cqw;padding:1.4cqw 3.4cqw 2.4cqw}
+</style></head>
+<body><main>
+<h1>Eldoria – Template de carte dynamique</h1>
+<p class="sub">Une seule mise en page : la couleur vient de la faction, les nombres et les textes viennent des données.</p>
+<div class="grid">
+<section class="panel">
+<div id="big"></div>
+<label for="json">Données de la carte (modifiables en direct)</label>
+<textarea id="json" spellcheck="false"></textarea>
+<label for="img">Modèle d’URL des images (champ « image » de la carte prioritaire)</label>
+<input id="img" value="images/{id}.webp">
+<label for="file">Image de test pour cette carte</label>
+<input id="file" type="file" accept="image/*">
+</section>
+<section>
+<div class="panel" style="margin-bottom:16px">
+<label for="flt" style="margin-top:0">Filtrer par faction</label><select id="flt"></select>
+<details><summary>Charger toutes tes cartes (liste JSON)</summary>
+<textarea id="bulk" placeholder="[ { id, name, faction, type, cost, power, rarity, text }, … ]"></textarea>
+<button id="load">Charger</button> <span id="msg"></span></details>
+</div>
+<div class="gal" id="gal"></div>
+</section>
+</div></main>
+<script>
+const TH={aurelia:['Aurelia','#2b52b8','#cfd8ea','#10245c'],drakhar:['Drakhar','#a3241a','#e2b53c','#240c0a'],sylvaris:['Sylvaris','#12805a','#cdb467','#06301f'],karadorn:['Karadorn','#946033','#a9b6c3','#3a2410'],nocthyr:['Nocthyr','#43286b','#a98bd6','#0d0816'],solaria:['Solaria','#d8b04a','#fff6df','#6b5214'],thalassor:['Thalassor','#1aa5ad','#d4e4ea','#0b4a50'],myrthal:['Myr’thal','#4b3a97','#9fb2ef','#0f1236'],skornheim:['Skornheim','#6fb4d8','#f1f8fc','#27506b'],zahara:['Zahara','#c99a3c','#f1dfae','#5f4112'],lieu:['Lieux','#6b7a3a','#d3d9a8','#262d10'],cristal:['Cristaux','#2c9fb8','#c9f1f7','#0a3340'],fleau:['Fléau','#5a1020','#c26d7c','#150308']};
+const RAR={C:'#9b9486',R:'#d9dde6',L:'#f2a31f'};
+const SAMPLE=[
+{id:'A10',name:'Reine Éliane',faction:'Aurelia',type:'Héros',cost:6,power:5,rarity:'L',text:'Début de tour : +1 énergie par tranche de 3 provinces contrôlées.',flavor:'Sa couronne n’a jamais touché le sol.'},
+{id:'A13',name:'Rempart',faction:'Aurelia',type:'Réaction',cost:3,rarity:'C',text:'Défense : +3 Puissance à la garnison attaquée.'},
+{id:'A05',name:'Garde Royal',faction:'Aurelia',type:'Unité',cost:3,power:3,rarity:'C',text:'Garnison : +2 Puissance à la province.'},
+{id:'D07',name:'Dragonnet',faction:'Drakhar',type:'Unité · Dragon',cost:3,power:4,rarity:'R',text:'Dragon. +1 Puissance au début de chaque Âge (max 7).'},
+{id:'D14',name:'Embuscade Draconique',faction:'Drakhar',type:'Piège',cost:2,rarity:'C',text:'Sur un Lieu : -3 Puissance aux Unités adverses qui s’y engagent.'},
+{id:'D20',name:'Réveil des Dragons',faction:'Drakhar',type:'Événement',cost:6,rarity:'L',text:'Mettez en jeu jusqu’à 2 Dragons de votre main, gratuitement.'},
+{id:'S01',name:'Éclaireur Elfe',faction:'Sylvaris',type:'Unité',cost:1,power:1,rarity:'C',text:'Quand engagé, regardez le prochain Lieu de la pioche.'},
+{id:'S12',name:'Graine d’Aetherion',faction:'Sylvaris',type:'Relique',cost:3,rarity:'R',text:'Début d’Âge : piochez 1 carte ; +1 énergie en réserve si vous possédez un cristal.'},
+{id:'K11',name:'Armure de Mithril',faction:'Karadorn',type:'Relique',cost:3,rarity:'C',text:'Équipe : +2 Puissance en défense ; ne peut pas être volée.'},
+{id:'K19',name:'Fortification',faction:'Karadorn',type:'Événement',cost:3,rarity:'R',text:'Vos garnisons gagnent +3 jusqu’au prochain tour adverse.'},
+{id:'N08',name:'Dragon Squelette',faction:'Nocthyr',type:'Unité · Dragon',cost:6,power:8,rarity:'R',text:'Dragon. Si défaussé, payez 2 pour le remettre en main.'},
+{id:'N18',name:'Vol de Cristal',faction:'Nocthyr',type:'Intrigue',cost:4,rarity:'R',text:'Volez un cristal à un joueur qui en possède 2 ou plus ; coût -1 si c’est le Porteur.'},
+{id:'L01',name:'Forêt Murmurante',faction:'Lieu',type:'Lieu · Province',difficulty:4,text:'Contrôlable : +1 prestige tant qu’elle est contrôlée.'},
+{id:'C01',name:'Cristal de Forge',faction:'Cristal',type:'Cristal · Palier I',prestige:1,difficulty:5,rarity:'R',text:'Mine d’Orrun. Vos Reliques équipées gagnent +1 Puissance.'},
+{id:'F07',name:'Le Dévoreur traque',faction:'Fléau',type:'Fléau · Acte III',text:'Le Porteur doit défendre un cristal contre Puissance 7, sinon il le perd.'}];
+const key=s=>(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z]/g,'');
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt=t=>esc(t).replace(/^(Dragon\.|[A-ZÉ][^:.]{1,24} :)/,'<b>$1</b>');
+const $=s=>document.querySelector(s);
+let cards=SAMPLE.slice(),sel=0,filter='',IMG='images/{id}.webp';
+function cardHTML(c){
+ const th=TH[key(c.faction)]||TH.lieu,m=th[1],hi=th[2],d=th[3];
+ const t=(c.text||'').length,fs=t>125?4.2:t>90?4.6:t>60?5:5.6;
+ const n=(c.name||'').length,nf=n>24?4.2:n>18?4.8:n>13?5.4:6;
+ const gem=c.cost!=null?c.cost:c.prestige,gc=c.cost==null?'g pr':'g';
+ const b=c.power!=null?c.power:c.difficulty,bc=c.power!=null?'pw':'pw df';
+ const src=c._img||c.image||IMG.replace('{id}',c.id);
+ return '<div class="card" style="--m:'+m+';--hi:'+hi+';--d:'+d+'"><div class="frame">'
+ +'<div class="bar head"><span class="nm" style="font-size:'+nf+'cqw">'+esc(c.name)+'</span>'+(gem!=null?'<span class="'+gc+'">'+esc(gem)+'</span>':'')+'</div>'
+ +'<div class="art"><span class="ph">'+esc(c.id)+'</span><img alt="" src="'+esc(src)+'"></div>'
+ +'<div class="bar ty"><span>'+esc(c.type)+'</span><i class="rar" style="--r:'+(RAR[c.rarity]||'transparent')+'"></i></div>'
+ +'<div class="box" style="font-size:'+fs+'cqw"><p>'+fmt(c.text)+'</p>'+(c.flavor?'<p class="fl">'+esc(c.flavor)+'</p>':'')+'</div>'
+ +'<div class="ft">'+esc(c.id)+' · '+esc(c.faction)+' · Eldoria</div>'
+ +(b!=null?'<div class="'+bc+'">'+esc(b)+'</div>':'')+'</div></div>';
+}
+const strip=c=>{const o=Object.assign({},c);delete o._img;return o};
+function draw(skipJson){
+ $('#gal').innerHTML=cards.map((c,i)=>[c,i]).filter(p=>!filter||key(p[0].faction)===filter)
+  .map(p=>cardHTML(p[0]).replace('class="card"','class="card'+(p[1]===sel?' sel':'')+'" data-i="'+p[1]+'"')).join('');
+ $('#big').innerHTML=cards[sel]?cardHTML(cards[sel]):'';
+ if(!skipJson)$('#json').value=cards[sel]?JSON.stringify(strip(cards[sel]),null,2):'';
+ document.querySelectorAll('.card img').forEach(i=>i.addEventListener('error',()=>i.remove()));
+}
+$('#flt').innerHTML='<option value="">Toutes</option>'+Object.keys(TH).map(k=>'<option value="'+k+'">'+TH[k][0]+'</option>').join('');
+$('#flt').addEventListener('change',e=>{filter=e.target.value;draw()});
+$('#gal').addEventListener('click',e=>{const c=e.target.closest('.card');if(c){sel=+c.dataset.i;draw()}});
+$('#json').addEventListener('input',e=>{try{const o=JSON.parse(e.target.value);o._img=cards[sel]._img;cards[sel]=o;draw(true)}catch(x){}});
+$('#img').addEventListener('input',e=>{IMG=e.target.value;draw(true)});
+$('#file').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{cards[sel]._img=r.result;draw(true)};r.readAsDataURL(f)});
+$('#load').addEventListener('click',()=>{try{const a=JSON.parse($('#bulk').value);if(!Array.isArray(a))throw 0;cards=a;sel=0;filter='';$('#flt').value='';$('#msg').textContent=a.length+' cartes chargées';draw()}catch(x){$('#msg').textContent='JSON invalide : une liste de cartes est attendue'}});
+draw();
+</script></body></html>

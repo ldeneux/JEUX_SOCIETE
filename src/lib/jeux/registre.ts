@@ -1,10 +1,10 @@
 import type { JeuModule } from './contract';
+import { archives } from './archives';
 import { loupgarou } from './loupgarou';
-// import { manoir } from './manoir';   // ajouter un jeu = un dossier + une ligne ici
 
 const modules: Record<string, JeuModule<any, any>> = {
   loupgarou,
-  // manoir,
+  archives,
 };
 
 export function obtenirModule(code: string): JeuModule<any, any> {
