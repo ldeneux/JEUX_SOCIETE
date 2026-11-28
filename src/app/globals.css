@@ -91,7 +91,7 @@ h1, h2, h3 { font-family: var(--titre); font-weight: 700; letter-spacing: 0.04em
 
 /* Cartes de rôle */
 .carte-role { position: relative; width: 200px; aspect-ratio: 2 / 3; border-radius: 14px; overflow: hidden; border: 2px solid var(--or); box-shadow: 0 8px 30px rgba(0,0,0,.6); background: #14110c; flex: 0 0 auto; }
-.carte-role img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.carte-role img { width: 100%; height: 100%; object-fit: contain; display: block; image-rendering: auto; }
 .carte-role.grande { width: min(300px, 78vw); }
 .carte-role.sans-image { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 1rem; gap: .5rem; background: radial-gradient(circle at 50% 30%, #2a2113, #0f0c07 70%); }
 .carte-role.sans-image .emoji { font-size: 3.4rem; }
@@ -212,7 +212,7 @@ input:focus { outline: 2px solid var(--or); outline-offset: 1px; }
 .noeud-nom { position: absolute; top: 135%; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: clamp(.5rem, 1.1vw, .8rem); font-weight: 700; color: #fff; text-shadow: 0 1px 3px #000, 0 0 6px #000; background: rgba(8,8,12,.55); padding: 0 .4em; border-radius: 6px; pointer-events: none; }
 .pions { position: absolute; transform: translate(-50%, -112%); display: flex; gap: 2px; z-index: 3; }
 .pion { width: clamp(24px, 3.6vw, 52px); aspect-ratio: 1; border-radius: 50%; border: 3px solid; overflow: hidden; background: #1a1208; box-shadow: 0 3px 8px rgba(0,0,0,.7); transition: transform .3s; }
-.pion img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; display: block; }
+.pion img { width: 100%; height: 100%; object-fit: contain; background: #1a1208; display: block; }
 .pion.actif { transform: scale(1.3); animation: pulse 1.6s ease-in-out infinite; z-index: 4; }
 .pion.elimine { filter: grayscale(1) brightness(.55); }
 @keyframes pulse { 50% { box-shadow: 0 0 0 6px rgba(245,217,138,.5), 0 3px 8px rgba(0,0,0,.7); } }
@@ -238,7 +238,7 @@ input:focus { outline: 2px solid var(--or); outline-offset: 1px; }
 /* Téléphone : carte de personnage et carnet */
 .carte-perso { position: relative; width: 200px; aspect-ratio: 307 / 341; border-radius: 14px; overflow: hidden; border: 2px solid var(--or); box-shadow: 0 8px 30px rgba(0,0,0,.6); background: #1a1208; flex: 0 0 auto; }
 .carte-perso.grande { width: min(300px, 78vw); }
-.carte-perso img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.carte-perso img { width: 100%; height: 100%; object-fit: contain; display: block; background: radial-gradient(circle at 50% 40%, #2a2113, #0f0c07 78%); }
 .carte-perso .legende { position: absolute; left: 0; right: 0; bottom: 0; padding: .6rem .8rem; background: linear-gradient(0deg, rgba(8,6,3,.95), transparent); display: grid; text-align: center; }
 .carte-perso .legende strong { font-family: var(--titre); color: var(--or-clair); letter-spacing: .05em; }
 .carte-perso .legende span { font-size: .8rem; color: #d8d2c0; }
@@ -274,7 +274,7 @@ div.ap-pill { cursor: default; }
 .ap-pill b { display: block; font-size: .76rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ap-pill small { display: block; font-size: .66rem; color: var(--laiton-clair); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ap-pill > span:last-child { min-width: 0; }
-.ap-mini { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; object-position: 50% 18%; border: 1px solid var(--laiton); flex: 0 0 auto; }
+.ap-mini { width: 28px; height: 28px; border-radius: 50%; object-fit: contain; background: #1a1208; border: 1px solid var(--laiton); flex: 0 0 auto; }
 
 .ap-onglets { display: grid; grid-template-columns: repeat(5, 1fr); gap: .35rem; background: var(--ardoise); border: 1px solid rgba(226,180,79,.28); border-radius: 14px; padding: .3rem; }
 .ap-onglets button { position: relative; display: flex; flex-direction: column; align-items: center; gap: .05rem; padding: .45rem .1rem; min-width: 0; white-space: nowrap; border: 0; border-radius: 10px; background: transparent; color: var(--doux); font: 600 .66rem/1.1 system-ui, sans-serif; cursor: pointer; }
@@ -317,7 +317,7 @@ div.ap-pill { cursor: default; }
 @keyframes apDest { 0%, 100% { box-shadow: 0 0 0 0 rgba(245,214,130,.7); } 50% { box-shadow: 0 0 0 9px rgba(245,214,130,0); } }
 .ap-rep-nom { position: absolute; top: 125%; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: .68rem; font-weight: 700; color: #fff; background: rgba(9,13,22,.85); border: 1px solid rgba(226,180,79,.5); padding: .05rem .45rem; border-radius: 7px; pointer-events: none; }
 .ap-pions { position: absolute; transform: translate(-50%, -125%); display: flex; gap: 2px; z-index: 3; pointer-events: none; }
-.ap-pion { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; object-position: 50% 18%; border: 2px solid #94a3b8; background: #1a1208; box-shadow: 0 3px 8px rgba(0,0,0,.7); }
+.ap-pion { width: 28px; height: 28px; border-radius: 50%; object-fit: contain; background: #1a1208; border: 2px solid #94a3b8; background: #1a1208; box-shadow: 0 3px 8px rgba(0,0,0,.7); }
 .ap-pion.moi { width: 34px; height: 34px; border-color: var(--laiton-clair); animation: pulse 1.8s ease-in-out infinite; }
 .ap-pion.elimine { filter: grayscale(1) brightness(.55); }
 
@@ -332,7 +332,7 @@ div.ap-pill { cursor: default; }
 .ap-role { background: rgba(9,13,22,.8); border: 1px solid rgba(226,180,79,.25); border-radius: 12px; padding: .6rem .7rem; }
 .ap-role small { color: var(--laiton-clair); text-transform: uppercase; letter-spacing: .08em; font-size: .62rem; font-weight: 700; } .ap-role p { margin: .2rem 0 0; font-size: .8rem; color: var(--parchemin); }
 .ap-contact { display: flex; align-items: center; gap: .6rem; background: rgba(9,13,22,.7); border: 1px solid #1e293b; border-radius: 12px; padding: .45rem .6rem; }
-.ap-contact img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; object-position: 50% 20%; border: 1px solid var(--laiton); }
+.ap-contact img { width: 40px; height: 40px; border-radius: 50%; object-fit: contain; background: #1a1208; border: 1px solid var(--laiton); }
 .ap-contact > div { flex: 1; min-width: 0; } .ap-contact small { display: block; font-size: .62rem; color: var(--doux); text-transform: uppercase; letter-spacing: .08em; } .ap-contact b { font-size: .85rem; }
 .ap-aller { width: 100%; min-height: 48px; border: 0; border-radius: 12px; cursor: pointer; font: 700 .8rem var(--titre); letter-spacing: .08em; text-transform: uppercase; color: #090d16; background: linear-gradient(90deg, #c8962e, #e2b44f); box-shadow: 0 0 24px -4px rgba(226,180,79,.35); }
 .ap-aller:disabled { opacity: .45; cursor: not-allowed; }
@@ -341,7 +341,7 @@ div.ap-pill { cursor: default; }
 .ap-pnj { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
 .ap-pnj li { display: grid; grid-template-columns: 54px 1fr auto; gap: .7rem; align-items: center; background: rgba(9,13,22,.75); border: 1px solid #1e293b; border-radius: 14px; padding: .5rem .6rem; }
 .ap-pnj li.ici { border-color: var(--laiton); box-shadow: 0 0 16px -4px rgba(226,180,79,.5); } .ap-pnj li.vu { opacity: .6; }
-.ap-pnj img { width: 54px; height: 54px; border-radius: 12px; object-fit: cover; object-position: 50% 15%; border: 1px solid rgba(226,180,79,.4); }
+.ap-pnj img { width: 54px; height: 54px; border-radius: 12px; object-fit: contain; background: #1a1208; border: 1px solid rgba(226,180,79,.4); }
 .ap-pnj b { display: block; font-size: .9rem; color: #fff; } .ap-pnj small { display: block; color: var(--laiton-clair); font-size: .7rem; } .ap-pnj p { margin: .15rem 0 0; font-size: .75rem; color: var(--doux); line-height: 1.3; }
 .ap-pnj-cote { display: grid; justify-items: end; gap: .2rem; }
 
@@ -355,7 +355,7 @@ div.ap-pill { cursor: default; }
 .carnet-grille.g-lieu { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); }
 .vignette { position: relative; width: 100%; padding: 0; border: 1px solid #2b3854; border-radius: 12px; overflow: hidden; background: #0b1020; color: var(--texte); cursor: pointer; display: block; transition: transform .12s, border-color .2s; }
 .vignette:active { transform: scale(.96); } .vignette:hover { border-color: var(--laiton); }
-.vignette img { width: 100%; aspect-ratio: 1; object-fit: cover; object-position: 50% 15%; display: block; }
+.vignette img { width: 100%; aspect-ratio: 1; object-fit: contain; background: #1a1208; display: block; }
 .g-lieu .vignette img, .g-artefact .vignette img, .g-mobile .vignette img { object-fit: contain; padding: .25rem; background: radial-gradient(circle at 50% 40%, #1c2742, #0b1020 75%); }
 .v-nom { display: block; padding: .25rem .3rem .35rem; font-size: .66rem; font-weight: 600; line-height: 1.15; text-align: center; min-height: 2.4em; }
 .v-badge { position: absolute; top: 3px; left: 3px; display: flex; gap: .2rem; align-items: center; background: rgba(9,13,22,.85); border: 1px solid rgba(226,180,79,.4); border-radius: 8px; padding: 0 .3rem; font-size: .72rem; } .v-badge i { font-style: normal; font-size: .6rem; color: var(--doux); }
@@ -396,7 +396,7 @@ div.ap-pill { cursor: default; }
 .ap-modale-carte { width: min(440px, 100%); display: grid; gap: .8rem; background: linear-gradient(180deg, #131c30, #0c1220); border: 1px solid var(--laiton); border-radius: 22px; padding: .9rem; box-shadow: 0 0 60px -10px rgba(226,180,79,.5); }
 .ap-modale-carte.petite { gap: .7rem; }
 .ap-pnj-portrait { position: relative; border-radius: 16px; overflow: hidden; border: 1px solid rgba(226,180,79,.5); background: #0b1020; aspect-ratio: 1; max-height: 46vh; margin: 0 auto; width: 100%; }
-.ap-pnj-portrait img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; display: block; }
+.ap-pnj-portrait img { width: 100%; height: 100%; object-fit: contain; background: #1a1208; display: block; }
 .ap-pnj-nom { position: absolute; left: 0; right: 0; bottom: 0; padding: 1.8rem .8rem .6rem; background: linear-gradient(0deg, rgba(4,6,12,.95), transparent); display: grid; }
 .ap-pnj-nom small { color: var(--laiton-clair); text-transform: uppercase; letter-spacing: .1em; font-size: .64rem; font-weight: 700; } .ap-pnj-nom b { font-family: var(--titre); font-size: 1.25rem; color: #fff; }
 .ap-confiance { display: flex; align-items: center; justify-content: center; gap: .6rem; font-size: .76rem; color: var(--doux); }
@@ -410,5 +410,5 @@ div.ap-pill { cursor: default; }
 .ap-approches button.risque { border-color: rgba(239,68,68,.45); }
 .ap-approches button:disabled { opacity: .55; }
 .ap-approches .ico { font-size: 1.5rem; text-align: center; } .ap-approches b { display: block; font-size: .95rem; } .ap-approches small { display: block; font-size: .72rem; color: var(--doux); line-height: 1.25; }
-.ap-resultat-tete { display: flex; align-items: center; gap: .7rem; } .ap-resultat-tete img { width: 64px; height: 64px; border-radius: 14px; object-fit: cover; object-position: 50% 18%; border: 1px solid var(--laiton); }
+.ap-resultat-tete { display: flex; align-items: center; gap: .7rem; } .ap-resultat-tete img { width: 64px; height: 64px; border-radius: 14px; object-fit: contain; background: #1a1208; border: 1px solid var(--laiton); }
 .ap-resultat-tete b { display: block; font-family: var(--titre); font-size: 1.1rem; color: #fff; } .ap-resultat-tete small { display: block; color: var(--doux); font-size: .78rem; line-height: 1.3; }

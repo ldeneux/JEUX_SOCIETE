@@ -10,7 +10,7 @@ export function CarteRole({ code, grande = false }: { code: string; grande?: boo
     return (
       <div className={`carte-role${taille}`}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={`/ravensburg/cartes/${code}.webp`} alt={def.nom} loading="lazy" width={640} height={960} />
+        <img src={`/ravensburg/cartes/${code}.webp`} alt={def.nom} loading="lazy" decoding="async" width={1024} height={1536} />
       </div>
     );
   }
