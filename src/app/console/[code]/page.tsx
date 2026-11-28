@@ -30,7 +30,7 @@ export default function ConsolePartie() {
   const { salon, joueurs, erreur: erreurSalon } = useSalon(code);
   const diff = useVue<VueConsole>(code, 'console');
   const secondes = useCompteARebours(diff.echeance);
-  const url = typeof window !== 'undefined' ? `${window.location.origin}/jouer?code=${code}` : '';
+  const url = typeof window !== 'undefined' ? `${window.location.origin}/jouer?code=${code}${salon?.jeu_code ? `&jeu=${salon.jeu_code}` : ''}` : '';
 
   // Minuteurs : la console déclenche l'avancement à l'échéance (idempotent côté serveur).
   useEffect(() => {

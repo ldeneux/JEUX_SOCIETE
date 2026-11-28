@@ -29,7 +29,7 @@ describe('rendu des écrans Archives avec de vraies données', () => {
     expect(carnet).toContain('/archives/motifs/');
     // Interface joueur complète : bandeau, onglets, carte du monde, inspecteur.
     const tel = renderToString(<ArchivesJoueur code="ABCD" vue={vue} version={1} pseudos={{ j0: 'Joueur0' }} secondes={30} pseudo="Joueur0" />);
-    for (const t of ['Les Archives du Temps', 'Mon tour', 'Carte', 'Carnet', 'PNJ', 'manches']) expect(tel).toContain(t);
+    for (const t of ['Les Archives du Temps', 'Camp de base', 'Enquêteur', 'Carte', 'Carnet', 'Indices', 'Mes cartes', 'manches']) expect(tel).toContain(t);
     // Le carnet d'un joueur ne contient JAMAIS la solution comme « main » d'un autre : la solution reste invisible.
     expect(JSON.stringify(vue)).not.toContain('"solution"');
     expect(JSON.stringify(archives.vueConsole(d))).not.toContain(`"id":"${d.solution.suspect}","nom"`);

@@ -228,7 +228,7 @@ input:focus { outline: 2px solid var(--or); outline-offset: 1px; }
 .arch-fin { margin-top: 1rem; text-align: center; }
 .arch-solution { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; margin-top: 1rem; }
 .arch-solution figure { margin: 0; width: 150px; }
-.arch-solution img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; border: 2px solid var(--or); }
+.arch-solution img { width: 100%; aspect-ratio: 1; object-fit: contain; padding: .3rem; background: radial-gradient(circle at 50% 40%, #1c2742, #0b1020 78%); border-radius: 12px; border: 2px solid var(--or); }
 .arch-solution figcaption { margin-top: .4rem; font-size: .85rem; color: var(--or-clair); }
 
 /* Téléphone : carte de personnage et carnet */
@@ -272,11 +272,11 @@ div.ap-pill { cursor: default; }
 .ap-pill > span:last-child { min-width: 0; }
 .ap-mini { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; object-position: 50% 18%; border: 1px solid var(--laiton); flex: 0 0 auto; }
 
-.ap-onglets { display: grid; grid-template-columns: repeat(4, 1fr); gap: .35rem; background: var(--ardoise); border: 1px solid rgba(226,180,79,.28); border-radius: 14px; padding: .3rem; }
-.ap-onglets button { position: relative; display: flex; flex-direction: column; align-items: center; gap: .05rem; padding: .45rem .2rem; border: 0; border-radius: 10px; background: transparent; color: var(--doux); font: 600 .74rem/1.1 system-ui, sans-serif; cursor: pointer; }
+.ap-onglets { display: grid; grid-template-columns: repeat(5, 1fr); gap: .35rem; background: var(--ardoise); border: 1px solid rgba(226,180,79,.28); border-radius: 14px; padding: .3rem; }
+.ap-onglets button { position: relative; display: flex; flex-direction: column; align-items: center; gap: .05rem; padding: .45rem .1rem; min-width: 0; white-space: nowrap; border: 0; border-radius: 10px; background: transparent; color: var(--doux); font: 600 .66rem/1.1 system-ui, sans-serif; cursor: pointer; }
 .ap-onglets button span { font-size: 1.1rem; }
 .ap-onglets button.actif { background: linear-gradient(180deg, rgba(245,214,130,.2), rgba(200,150,46,.18)); color: var(--laiton-clair); box-shadow: inset 0 0 0 1px rgba(226,180,79,.5); }
-.ap-alerte { position: absolute; top: 6px; right: 28%; width: 9px; height: 9px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 0 0 rgba(239,68,68,.7); animation: pulse 1.4s infinite; }
+.ap-alerte { position: absolute; top: 5px; right: 14%; width: 9px; height: 9px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 0 0 rgba(239,68,68,.7); animation: pulse 1.4s infinite; }
 
 .ap-panneau { background: var(--ardoise); border: 1px solid rgba(226,180,79,.28); border-radius: 18px; padding: .9rem; box-shadow: 0 12px 32px -12px rgba(0,0,0,.75); animation: apEntre .22s ease-out; }
 @keyframes apEntre { from { opacity: 0; transform: translateY(4px); } }
@@ -359,3 +359,18 @@ div.ap-pill { cursor: default; }
 .vignette.c-main { border-color: rgba(95,176,122,.7); } .vignette.c-montree { border-color: rgba(106,166,232,.7); }
 .vignette.c-innocente, .vignette.m-elimine { opacity: .42; filter: grayscale(.85); } .vignette.c-innocente .v-nom, .vignette.m-elimine .v-nom { text-decoration: line-through; }
 .vignette.m-piste { border-color: var(--laiton-clair); box-shadow: 0 0 16px -2px rgba(245,214,130,.7); }
+
+/* Camp de base, cartes en main, enquêteur */
+.ap-camp { display: grid; grid-template-columns: 72px 1fr auto; gap: .7rem; align-items: center; width: 100%; text-align: left; font: inherit; color: var(--texte); cursor: pointer; background: rgba(9,13,22,.75); border: 1px solid rgba(226,180,79,.35); border-radius: 14px; padding: .5rem .7rem; margin-bottom: 1rem; }
+.ap-camp img { width: 72px; height: 60px; object-fit: contain; }
+.ap-camp small { display: block; font-size: .64rem; letter-spacing: .08em; text-transform: uppercase; color: var(--laiton-clair); font-weight: 700; }
+.ap-camp b { display: block; font-size: 1.05rem; color: #fff; } .ap-camp em { font-style: normal; font-size: .72rem; color: var(--doux); } .ap-camp i { font-style: normal; font-size: .72rem; color: var(--laiton-clair); font-weight: 600; }
+.ap-cartes { margin-top: 1.2rem; border-top: 1px solid #1e293b; padding-top: .9rem; } .ap-cartes small, .ap-h2 small { color: var(--doux); font-weight: 400; }
+.ap-main { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: .5rem; }
+.ap-main li { display: grid; gap: .1rem; text-align: center; background: rgba(9,13,22,.75); border: 1px solid rgba(95,176,122,.6); border-radius: 12px; padding: .3rem .3rem .4rem; }
+.ap-main img { width: 100%; aspect-ratio: 1; object-fit: contain; border-radius: 8px; background: radial-gradient(circle at 50% 40%, #1c2742, #0b1020 75%); }
+.ap-main span { font-size: .68rem; font-weight: 600; line-height: 1.15; } .ap-main small { font-size: .58rem; color: var(--laiton-clair); text-transform: uppercase; letter-spacing: .08em; }
+.ap-enq { display: grid; justify-items: center; gap: 1rem; }
+.ap-enq-texte { display: grid; gap: .5rem; text-align: center; justify-items: center; }
+.ap-enq-texte p { margin: 0; color: var(--parchemin); font-size: .9rem; }
+.ap-stats { list-style: none; margin: .4rem 0 0; padding: 0; display: grid; gap: .25rem; font-size: .82rem; color: var(--doux); } .ap-stats b { color: var(--laiton-clair); }

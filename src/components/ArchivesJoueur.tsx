@@ -5,7 +5,7 @@ import { appeler } from '@/lib/client/api';
 import { Actions } from '@/components/Actions';
 import { CarnetArchives, type DonneesCarnet } from '@/components/CarnetArchives';
 import { CartePerso } from '@/components/CartePerso';
-import { imgLieu, imgPerso, imgPnj } from '@/lib/jeux/archives/images';
+import { imgCarte, imgLieu, imgPerso, imgPnj } from '@/lib/jeux/archives/images';
 import { PERSO_PAR_CODE } from '@/lib/jeux/archives/donnees';
 
 interface NoeudJ { id: string; nom: string; type: 'lieu' | 'secondaire'; x: number; y: number; region: string; epoque: string; role: string; ferme: boolean; visite: boolean; pnj: string | null }
@@ -17,7 +17,8 @@ export interface DonneesJoueur extends DonneesCarnet {
   noeuds: NoeudJ[]; pions: PionJ[]; pnj: PnjJ[];
 }
 
-type Onglet = 'action' | 'carte' | 'carnet' | 'pnj';
+type Onglet = 'camp' | 'enqueteur' | 'carte' | 'carnet' | 'indices';
+const ETIQUETTE_CAT: Record<string, string> = { suspect: 'Suspect', artefact: 'Artefact', lieu: 'Lieu', mobile: 'Mobile' };
 const SPECIALITE: Record<string, string> = { suspect: 'suspects', artefact: 'artefacts', lieu: 'lieux', mobile: 'mobiles' };
 
 interface Props { code: string; vue: VueJoueur; version: number; pseudos: Record<string, string>; secondes: number | null; pseudo: string }
@@ -27,16 +28,15 @@ export function ArchivesJoueur({ code, vue, version, pseudos, secondes, pseudo }
   const d = vue.donnees as unknown as DonneesJoueur;
   const fin = vue.ecran === 'fin';
   const aAgir = vue.actions.length > 0;
-  const [onglet, setOnglet] = useState<Onglet>('action');
+  const [onglet, setOnglet] = useState<Onglet>('camp');
   const [inspecte, setInspecte] = useState<string>(d.positionId);
-  const [persoOuvert, setPersoOuvert] = useState(false);
   const [envoi, setEnvoi] = useState(false);
   const [erreur, setErreur] = useState('');
 
   // Bascule automatique sur « Mon tour » quand l'enquête t'attend.
   const avant = useRef(false);
   useEffect(() => {
-    if (aAgir && !avant.current) setOnglet('action');
+    if (aAgir && !avant.current) setOnglet('camp');
     avant.current = aAgir;
   }, [aAgir]);
   useEffect(() => setInspecte(d.positionId), [d.positionId]);
@@ -49,17 +49,20 @@ export function ArchivesJoueur({ code, vue, version, pseudos, secondes, pseudo }
 
   async function allerA(id: string) {
     setEnvoi(true); setErreur('');
-    try { await appeler(`/api/salons/${code}/action`, { corps: { id: 'dest', valeur: id } }); setOnglet('action'); }
+    try { await appeler(`/api/salons/${code}/action`, { corps: { id: 'dest', valeur: id } }); setOnglet('camp'); }
     catch (e) { setErreur((e as Error).message); }
     finally { setEnvoi(false); }
   }
 
   const voirSurCarte = (id: string | null) => { if (id) { setInspecte(id); setOnglet('carte'); } };
+  const perso = PERSO_PAR_CODE[vue.carte?.code ?? ''];
+  const main = d.carnet.flatMap((sec) => sec.cartes.filter((k) => k.statut === 'main').map((k) => ({ ...k, cat: sec.cat })));
   const tabs: { id: Onglet; icone: string; nom: string; alerte?: boolean }[] = [
-    { id: 'action', icone: fin ? '🏆' : '🎯', nom: fin ? 'Verdict' : 'Mon tour', alerte: aAgir && onglet !== 'action' },
+    { id: 'camp', icone: fin ? '🏆' : '🏕️', nom: fin ? 'Verdict' : 'Camp de base', alerte: aAgir && onglet !== 'camp' },
+    { id: 'enqueteur', icone: '🕵️', nom: 'Enquêteur' },
     { id: 'carte', icone: '🗺️', nom: 'Carte' },
     { id: 'carnet', icone: '📓', nom: 'Carnet' },
-    { id: 'pnj', icone: '🗣️', nom: 'PNJ' },
+    { id: 'indices', icone: '🔎', nom: 'Indices' },
   ];
 
   return (
@@ -69,7 +72,7 @@ export function ArchivesJoueur({ code, vue, version, pseudos, secondes, pseudo }
         <div className="ap-hud-ligne">
           <div className="ap-titre">
             <span className="ap-embleme" aria-hidden>⏳</span>
-            <div><strong>Les Archives du Temps</strong><small>{pseudo || 'Enquêteur'} · {PERSO_PAR_CODE[vue.carte?.code ?? '']?.nom}</small></div>
+            <div><strong>Les Archives du Temps</strong><small>{pseudo || 'Enquêteur'} · {perso?.nom}</small></div>
           </div>
           <span className={`ap-chrono${urgent ? ' urgent' : ''}`}>{secondes !== null && !fin ? `${secondes}s` : ''}</span>
         </div>
@@ -80,21 +83,9 @@ export function ArchivesJoueur({ code, vue, version, pseudos, secondes, pseudo }
           </div>
           <div className="ap-barre"><div style={{ width: `${pct}%` }} /></div>
         </div>
-        <div className="ap-pills">
-          <button type="button" className="ap-pill" onClick={() => voirSurCarte(d.positionId)}>
-            <span>📍</span>
-            <span><b>{ici?.nom ?? d.position}</b><small>{ici?.type === 'lieu' ? 'Lieu principal' : 'Site secondaire'}</small></span>
-          </button>
-          <div className="ap-pill"><span>🂠</span><span><b>{d.nbCartes}</b><small>cartes</small></span></div>
-          <button type="button" className="ap-pill" onClick={() => setPersoOuvert(true)}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            {vue.carte && <img className="ap-mini" src={imgPerso(vue.carte.code)} alt="" />}
-            <span><b>Enquêteur</b><small>{PERSO_PAR_CODE[vue.carte?.code ?? '']?.pouvoir}{d.pouvoirUtilise ? ' · utilisé' : ''}</small></span>
-          </button>
-        </div>
       </header>
 
-      {/* ---------- Onglets ---------- */}
+      {/* ---------- Une seule ligne d'onglets ---------- */}
       <nav className="ap-onglets" role="tablist">
         {tabs.map((t) => (
           <button key={t.id} role="tab" aria-selected={onglet === t.id} className={onglet === t.id ? 'actif' : ''} onClick={() => setOnglet(t.id)}>
@@ -103,9 +94,21 @@ export function ArchivesJoueur({ code, vue, version, pseudos, secondes, pseudo }
         ))}
       </nav>
 
-      {/* ---------- Mon tour ---------- */}
-      {onglet === 'action' && (
+      {/* ---------- Camp de base : position, actions, cartes en main ---------- */}
+      {onglet === 'camp' && (
         <section className="ap-panneau ap-action">
+          {ici && (
+            <button type="button" className="ap-camp" onClick={() => voirSurCarte(d.positionId)}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={imgLieu(ici.id)} alt="" />
+              <span>
+                <small>📍 Camp de base · {ici.type === 'lieu' ? 'Lieu principal' : 'Site secondaire'}</small>
+                <b>{ici.nom}</b>
+                <em>{ici.region}</em>
+              </span>
+              <i>Carte →</i>
+            </button>
+          )}
           <div className="ap-etat">
             <span className="ap-etiquette">{fin ? 'Conseil des Archives' : aAgir ? 'Ton tour' : 'En attente'}</span>
             <h1>{vue.titre}</h1>
@@ -113,12 +116,39 @@ export function ArchivesJoueur({ code, vue, version, pseudos, secondes, pseudo }
           </div>
           {aAgir && <Actions code={code} actions={vue.actions} version={version} pseudos={pseudos} />}
           {!aAgir && !fin && d.actif && <p className="ap-doux">Observe la carte et complète ton carnet pendant que {d.actif.pseudo} joue.</p>}
-          {vue.secrets.length > 0 && (
-            <details className="ap-infos" open={fin}>
-              <summary>Mes informations ({vue.secrets.length})</summary>
-              <div className="secrets">{[...vue.secrets].reverse().map((s, i) => <div key={i}><b>{s.libelle}</b>{s.valeur}</div>)}</div>
-            </details>
-          )}
+
+          <div className="ap-cartes">
+            <h2 className="ap-h2">Mes cartes <small>({main.length})</small></h2>
+            <p className="ap-doux">Ces cartes sont dans ta main : elles ne sont donc pas dans la solution.</p>
+            <ul className="ap-main">
+              {main.map((k) => (
+                <li key={k.id}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={imgCarte(k.cat, k.id)} alt="" loading="lazy" />
+                  <span>{k.nom}</span>
+                  <small>{ETIQUETTE_CAT[k.cat]}</small>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
+
+      {/* ---------- Enquêteur ---------- */}
+      {onglet === 'enqueteur' && vue.carte && (
+        <section className="ap-panneau ap-enq">
+          <CartePerso code={vue.carte.code} grande />
+          <div className="ap-enq-texte">
+            <span className="ap-etiquette">{perso?.role}</span>
+            <h2 className="ap-h2">{perso?.nom}</h2>
+            <p><b>{perso?.pouvoir}</b> — {perso?.resume}</p>
+            {perso?.actif && <span className={`ap-tag ${d.pouvoirUtilise ? 'gris' : 'or'}`}>{d.pouvoirUtilise ? 'Pouvoir déjà utilisé' : 'Pouvoir disponible'}</span>}
+            <ul className="ap-stats">
+              <li><b>{d.noeuds.filter((n) => n.type === 'lieu' && n.visite).length}</b> / 12 lieux visités</li>
+              <li><b>{d.pnj.filter((p) => p.vu).length}</b> / 15 PNJ consultés</li>
+              <li><b>{d.nbCartes}</b> cartes en main</li>
+            </ul>
+          </div>
         </section>
       )}
 
@@ -135,10 +165,15 @@ export function ArchivesJoueur({ code, vue, version, pseudos, secondes, pseudo }
         <section className="ap-panneau"><CarnetArchives donnees={d} code={code} /></section>
       )}
 
-      {/* ---------- PNJ ---------- */}
-      {onglet === 'pnj' && (
+      {/* ---------- Indices : ce que j'ai appris + répertoire des PNJ ---------- */}
+      {onglet === 'indices' && (
         <section className="ap-panneau">
-          <h2 className="ap-h2">Répertoire des 15 PNJ</h2>
+          <h2 className="ap-h2">Mes indices <small>({vue.secrets.length})</small></h2>
+          {vue.secrets.length > 0 ? (
+            <div className="secrets">{[...vue.secrets].reverse().map((s, i) => <div key={i}><b>{s.libelle}</b>{s.valeur}</div>)}</div>
+          ) : <p className="ap-doux">Aucun indice pour l’instant : interroge un PNJ ou formule une hypothèse.</p>}
+
+          <h2 className="ap-h2" style={{ marginTop: '1.2rem' }}>Les 15 PNJ</h2>
           <p className="ap-doux">Chaque témoin ne parle qu’une fois par enquêteur. Sur un lieu principal, interroger le PNJ remplace ton hypothèse ; sur un site secondaire, c’est tout l’intérêt de la visite.</p>
           <ul className="ap-pnj">
             {d.pnj.map((p) => (
@@ -158,14 +193,6 @@ export function ArchivesJoueur({ code, vue, version, pseudos, secondes, pseudo }
             ))}
           </ul>
         </section>
-      )}
-
-      {persoOuvert && vue.carte && (
-        <div className="carte-modale" onClick={() => setPersoOuvert(false)} role="dialog" aria-label="Mon enquêteur">
-          <CartePerso code={vue.carte.code} grande />
-          <p>{d.pouvoir}</p>
-          <button className="btn btn-or">Fermer</button>
-        </div>
       )}
     </div>
   );

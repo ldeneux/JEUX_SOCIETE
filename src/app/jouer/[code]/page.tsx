@@ -71,16 +71,16 @@ export default function Telephone() {
       <div className={`fond ${archives ? 'archives' : 'leger'}`} />
       <main className="tel">
         <div className="tel-haut">
-          <span className="tel-pseudo">{moi || 'Ravensburg'}</span>
+          <span className="tel-pseudo">{moi || (archives ? 'Archives du Temps' : 'Ravensburg')}</span>
           <span className={`mini-chrono${urgent ? ' urgent' : ''}`}>{secondes !== null && vue && vue.ecran !== 'fin' ? `${secondes}s` : ''}</span>
         </div>
 
         <div className="tel-centre">
           {!vue && (
             <>
-              <div className="lune-grande">🌕</div>
-              <h1>Tu es dans le village</h1>
-              <p style={{ color: 'var(--doux)' }}>Salon <strong style={{ color: 'var(--or-clair)', letterSpacing: '.2em' }}>{code}</strong> · {joueurs.length} habitant(s).<br />
+              <div className="lune-grande">{archives ? '⏳' : '🌕'}</div>
+              <h1>{archives ? 'Ton dossier est prêt' : 'Tu es dans le village'}</h1>
+              <p style={{ color: 'var(--doux)' }}>Salon <strong style={{ color: 'var(--or-clair)', letterSpacing: '.2em' }}>{code}</strong> · {joueurs.length} {archives ? 'enquêteur(s)' : 'habitant(s)'}.<br />
                 {salon?.statut === 'en_cours' ? 'La partie démarre…' : 'En attente du lancement par la console.'}</p>
             </>
           )}

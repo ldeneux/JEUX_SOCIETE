@@ -4,6 +4,14 @@ import { repondre, salonParCode, sbService, utilisateur, type Params } from '@/l
 
 export const dynamic = 'force-dynamic';
 
+/** Infos publiques minimales d'un salon (pour personnaliser l'écran « Rejoindre » selon le jeu). */
+export async function GET(_req: Request, { params }: Params) {
+  return repondre(async () => {
+    const salon = await salonParCode(sbService(), (await params).code);
+    return { jeu: salon.jeu_code, statut: salon.statut };
+  });
+}
+
 /** Modifie le mode / les options tant que la partie n'a pas démarré (hôte uniquement). */
 export async function PATCH(req: Request, { params }: Params) {
   return repondre(async () => {
