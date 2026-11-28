@@ -1,6 +1,6 @@
 import type { VueConsole, VueJoueur } from '../contract';
-import { CATEGORIES, CARTES_PAR_CAT, NOEUD_PAR_ID, NOEUDS, PERSO_PAR_CODE } from './donnees';
-import { descripteursAR, joueur, joueurActif, nomCarte, type EtatAR, type JoueurAR } from './regles';
+import { CATEGORIES, CARTES_PAR_CAT, NOEUD_PAR_ID, NOEUDS, PERSO_PAR_CODE, PNJS, pnjDe } from './donnees';
+import { descripteursAR, destinations, joueur, joueurActif, nomCarte, type EtatAR, type JoueurAR } from './regles';
 
 export interface LigneCarnet { id: string; nom: string; statut: 'main' | 'montree' | 'innocente' | 'inconnue'; detail?: string }
 
@@ -25,6 +25,43 @@ const TITRES_ETAPE: Record<string, string> = {
   fin: 'Fin de ton tour', a_suspect: 'Ton accusation', a_artefact: 'Ton accusation', a_lieu: 'Ton accusation', a_mobile: 'Ton accusation',
 };
 
+/** Données privées du téléphone : carnet, plateau, PNJ et ce que ce joueur peut faire sur la carte. Aucune solution ici. */
+function donneesJoueur(d: EtatAR, j: JoueurAR, perso: (typeof PERSO_PAR_CODE)[string]) {
+  const actif = d.phase === 'fin' ? null : joueurActif(d);
+  const monTour = !!actif && actif.id === j.id && !j.elimine && d.phase === 'tour';
+  const peutBouger = monTour && (d.etape === 'deplacement' || d.etape === 'raccourci');
+  const dests: Record<string, number> = {};
+  if (peutBouger) {
+    if (d.etape === 'raccourci') for (const n of NOEUDS) { if (n.id !== j.noeud && !d.fermes.includes(n.id)) dests[n.id] = 0; }
+    else for (const { n, dist } of destinations(d, j)) dests[n.id] = dist;
+  }
+  return {
+    carnet: carnetDe(d, j),
+    alternatives: j.alternatives.map((a) => `${nomCarte(a.a)} ou ${nomCarte(a.b)}`),
+    position: NOEUD_PAR_ID[j.noeud].nom,
+    positionId: j.noeud,
+    pouvoir: `${perso.pouvoir} : ${perso.resume}`,
+    pouvoirUtilise: j.pouvoirUtilise,
+    manche: d.manche,
+    toursMax: d.toursMax,
+    etape: d.etape,
+    monTour,
+    actif: actif ? { id: actif.id, pseudo: actif.pseudo } : null,
+    nbCartes: j.main.length,
+    dests,
+    destsMode: d.etape === 'raccourci' ? 'raccourci' : 'pas',
+    noeuds: NOEUDS.map((n) => ({
+      id: n.id, nom: n.nom, type: n.type, x: n.x, y: n.y, region: n.region, epoque: n.epoque, role: n.role, ferme: d.fermes.includes(n.id),
+      visite: j.lieuxVisites.includes(n.id), pnj: n.pnj ?? null,
+    })),
+    pions: d.joueurs.map((p) => ({ id: p.id, pseudo: p.pseudo, perso: p.perso, noeud: p.noeud, elimine: p.elimine, moi: p.id === j.id })),
+    pnj: PNJS.map((p) => {
+      const site = NOEUDS.find((n) => n.pnj === p.code);
+      return { code: p.code, nom: p.nom, role: p.role, specialite: p.specialite ?? null, noeud: site?.id ?? null, lieu: site?.nom ?? null, vu: j.vusPNJ.includes(p.code), ici: pnjDe(j.noeud)?.code === p.code };
+    }),
+  };
+}
+
 export function vueJoueurAR(d: EtatAR, id: string): VueJoueur {
   const j = joueur(d, id);
   if (!j) throw new Error('Joueur inconnu');
@@ -33,12 +70,7 @@ export function vueJoueurAR(d: EtatAR, id: string): VueJoueur {
   const base = {
     carte: { code: j.perso, nom: perso.nom },
     secrets: [{ libelle: 'Mes cartes', valeur: j.main.map(nomCarte).join('\n') }, ...j.infos],
-    donnees: {
-      carnet: carnetDe(d, j),
-      alternatives: j.alternatives.map((a) => `${nomCarte(a.a)} ou ${nomCarte(a.b)}`),
-      position: NOEUD_PAR_ID[j.noeud].nom,
-      pouvoir: `${perso.pouvoir} : ${perso.resume}`,
-    },
+    donnees: donneesJoueur(d, j, perso),
   };
 
   if (d.phase === 'fin') {
@@ -81,7 +113,7 @@ export function vueConsoleAR(d: EtatAR): VueConsole {
       badges: [PERSO_PAR_CODE[j.perso].nom, j.elimine ? 'écarté' : '', fin && j.ia ? '🤖' : ''].filter(Boolean),
     })),
     donnees: {
-      noeuds: NOEUDS.map((n) => ({ id: n.id, nom: n.nom, type: n.type, x: n.x, y: n.y, epoque: n.epoque, ferme: d.fermes.includes(n.id) })),
+      noeuds: NOEUDS.map((n) => ({ id: n.id, nom: n.nom, type: n.type, x: n.x, y: n.y, epoque: n.epoque, ferme: d.fermes.includes(n.id), pnj: n.pnj ?? null })),
       pions: d.joueurs.map((j) => ({ id: j.id, pseudo: j.pseudo, perso: j.perso, noeud: j.noeud, elimine: j.elimine })),
       actif: actif?.id ?? null,
       manche: d.manche,

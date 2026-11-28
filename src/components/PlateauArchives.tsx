@@ -1,7 +1,8 @@
 'use client';
 import type { VueConsole } from '@/lib/jeux/contract';
+import { imgPerso, imgCarte } from '@/lib/jeux/archives/images';
 
-interface Noeud { id: string; nom: string; type: 'lieu' | 'pnj'; x: number; y: number; ferme: boolean }
+interface Noeud { id: string; nom: string; type: 'lieu' | 'secondaire'; x: number; y: number; ferme: boolean }
 interface Pion { id: string; pseudo: string; perso: string; noeud: string; elimine: boolean }
 interface Hyp { auteur: string; suspect: string; artefact: string; lieu: string; mobile: string; refutePar: string | null; resolue: boolean }
 type CarteSol = { id: string; nom: string };
@@ -36,7 +37,7 @@ export function PlateauArchives({ vue, secondes }: { vue: VueConsole; secondes: 
           <img src="/archives/fond.webp" alt="Carte des Archives du Temps" />
           {noeuds.map((n) => (
             <div key={n.id} className={`noeud ${n.type}${n.ferme ? ' ferme' : ''}`} style={{ left: `${n.x}%`, top: `${n.y}%` }} title={n.nom}>
-              <span className="noeud-nom">{n.ferme ? '⛔ ' : n.type === 'pnj' ? '🗣 ' : ''}{n.nom}</span>
+              <span className="noeud-nom">{n.ferme ? '⛔ ' : n.type === 'secondaire' ? '🗣 ' : ''}{n.nom}</span>
             </div>
           ))}
           {[...parNoeud.entries()].map(([id, liste]) => {
@@ -46,7 +47,7 @@ export function PlateauArchives({ vue, secondes }: { vue: VueConsole; secondes: 
                 {liste.map((p) => (
                   <div key={p.id} className={`pion${actif === p.id ? ' actif' : ''}${p.elimine ? ' elimine' : ''}`} style={{ borderColor: couleur(p.id) }} title={p.pseudo}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={`/archives/persos/${p.perso}.webp`} alt={p.pseudo} />
+                    <img src={imgPerso(p.perso)} alt={p.pseudo} />
                   </div>
                 ))}
               </div>
@@ -90,10 +91,8 @@ export function PlateauArchives({ vue, secondes }: { vue: VueConsole; secondes: 
           <div className="arch-solution">
             {(['suspect', 'artefact', 'lieu', 'mobile'] as const).map((k) => (
               <figure key={k}>
-                {(k === 'suspect' || k === 'artefact') && (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img src={`/archives/${k === 'suspect' ? 'persos' : 'artefacts'}/${solution[k].id}.webp`} alt={solution[k].nom} />
-                )}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={imgCarte(k, solution[k].id)} alt={solution[k].nom} />
                 <figcaption>{solution[k].nom}</figcaption>
               </figure>
             ))}

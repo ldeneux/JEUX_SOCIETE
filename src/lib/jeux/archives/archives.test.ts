@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { creerRng, type Descripteur } from '../contract';
 import { archives, type EtatAR } from './index';
-import { CARTES, CARTES_PAR_CAT, DEPART, NOEUDS, NOEUD_PAR_ID, PERSOS, VOISINS, distances } from './donnees';
+import { CARTES, CARTES_PAR_CAT, DEPART, NOEUDS, NOEUD_PAR_ID, PERSOS, PNJS, PNJ_PAR_CODE, VOISINS, distances } from './donnees';
 import { candidats } from './ia';
 
 type Mode = 'classique' | 'course' | 'vivantes';
@@ -68,14 +68,19 @@ function jouer(seed: string, mode: Mode, n: number, humainsAleatoires: number) {
 
 describe('données du plateau', () => {
   it('cartes et nœuds cohérents', () => {
-    expect(CARTES_PAR_CAT.suspect).toHaveLength(6);
+    expect(CARTES_PAR_CAT.suspect).toHaveLength(10);
     expect(CARTES_PAR_CAT.artefact).toHaveLength(10);
-    expect(CARTES_PAR_CAT.lieu).toHaveLength(9);
-    expect(CARTES_PAR_CAT.mobile).toHaveLength(6);
+    expect(CARTES_PAR_CAT.lieu).toHaveLength(12);
+    expect(CARTES_PAR_CAT.mobile).toHaveLength(10);
     expect(new Set(CARTES.map((c) => c.id)).size).toBe(CARTES.length);
-    expect(PERSOS).toHaveLength(6);
-    expect(NOEUDS.filter((n) => n.type === 'pnj')).toHaveLength(6);
-    for (const n of NOEUDS) if (n.type === 'pnj') expect(n.pnj).toBeDefined();
+    expect(PERSOS).toHaveLength(10);
+    expect(NOEUDS.filter((n) => n.type === 'lieu')).toHaveLength(12);
+    expect(NOEUDS.filter((n) => n.type === 'secondaire')).toHaveLength(5);
+    expect(PNJS).toHaveLength(15);
+    // Chaque site secondaire a un PNJ ; chaque PNJ est posté sur exactement un site.
+    for (const n of NOEUDS) if (n.type === 'secondaire') expect(n.pnj).toBeDefined();
+    for (const k of PNJS) expect(NOEUDS.filter((n) => n.pnj === k.code)).toHaveLength(1);
+    for (const n of NOEUDS) if (n.pnj) expect(PNJ_PAR_CODE[n.pnj]).toBeDefined();
   });
   it('le graphe est symétrique, connexe depuis le départ et sans nœud isolé', () => {
     for (const [a, vs] of Object.entries(VOISINS)) {
@@ -144,6 +149,47 @@ describe('règles', () => {
     expect(faux.x.ordre[faux.x.actif]).not.toBe(faux.id);
     const juste = accuser(true);
     expect(archives.resultat(juste.x)!.vainqueurs).toEqual([juste.id]);
+  });
+
+  it('nouveaux pouvoirs : collectionneur, horloger, pèlerin consulté à la place d’une hypothèse', () => {
+    const joueurs = [0, 1, 2].map((i) => ({ id: `j${i}`, pseudo: `P${i}`, place: i }));
+    const { etat } = archives.setup({ joueurs, mode: 'classique', config: archives.configSchema.parse({}), rng: creerRng('pouv') });
+    const base = etat as EtatAR;
+    const id = base.ordre[base.actif];
+    // Horloger : remontage une seule fois, en fin de tour.
+    let d = structuredClone(base);
+    d.joueurs.find((p) => p.id === id)!.perso = 'horloger';
+    d.etape = 'fin';
+    const rng = creerRng('h');
+    const fin = archives.vueJoueur(d, id).actions[0];
+    expect(fin.type === 'choix' && fin.options.map((o) => o.valeur)).toContain('rejouer');
+    d = archives.appliquer(d, id, { id: 'fin', valeur: 'rejouer' }, rng).etat as EtatAR;
+    expect(d.etape).toBe('deplacement');
+    d.etape = 'fin';
+    const fin2 = archives.vueJoueur(d, id).actions[0];
+    expect(fin2.type === 'choix' && fin2.options.map((o) => o.valeur)).not.toContain('rejouer');
+    // Interroger le PNJ d'un lieu principal remplace l'hypothèse et termine l'étape.
+    let e = structuredClone(base);
+    const p = e.joueurs.find((x) => x.id === id)!;
+    p.noeud = 'pyramides'; e.etape = 'hypothese';
+    const hyp = archives.vueJoueur(e, id).actions[0];
+    expect(hyp.type === 'choix' && hyp.options.map((o) => o.valeur)).toContain('pnj');
+    e = archives.appliquer(e, id, { id: 'hypothese', valeur: 'pnj' }, creerRng('p')).etat as EtatAR;
+    expect(e.etape).toBe('fin');
+    expect(e.joueurs.find((x) => x.id === id)!.vusPNJ).toContain('historien');
+  });
+
+  it('le collectionneur démarre avec un mobile innocenté', () => {
+    for (let i = 0; i < 40; i++) {
+      const joueurs = Array.from({ length: 6 }, (_, k) => ({ id: `j${k}`, pseudo: `P${k}`, place: k }));
+      const { etat } = archives.setup({ joueurs, mode: 'classique', config: archives.configSchema.parse({}), rng: creerRng(`col-${i}`) });
+      const d = etat as EtatAR;
+      const c = d.joueurs.find((p) => p.perso === 'collectionneur');
+      if (!c) continue;
+      expect(c.innocentes.filter((k) => CARTES_PAR_CAT.mobile.some((m) => m.id === k)).length).toBeGreaterThanOrEqual(1);
+      expect(c.infos.length).toBeGreaterThanOrEqual(1);
+      return;
+    }
   });
 
   it('le joueur ne peut pas se déplacer au-delà de son allonge, ni sur un site fermé', () => {

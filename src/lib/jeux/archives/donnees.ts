@@ -1,6 +1,7 @@
 /**
  * DONNÉES DE « CLUEDO : LES ARCHIVES DU TEMPS » : cartes d'enquête, personnages, PNJ et plateau.
  * Le plateau est la carte du monde : les coordonnées sont en % de l'image 1672×941 (public/archives/fond.webp).
+ * 10 suspects · 10 artefacts · 12 lieux principaux (+ 5 sites secondaires) · 10 mobiles · 15 PNJ.
  */
 export type Categorie = 'suspect' | 'artefact' | 'lieu' | 'mobile';
 
@@ -15,22 +16,26 @@ export const CATEGORIES: { cat: Categorie; titre: string; article: string }[] = 
 
 // ---------------------------------------------------------------- Personnages (= suspects)
 
-export interface Perso { code: string; nom: string; pouvoir: string; resume: string; actif?: string }
+export interface Perso { code: string; nom: string; pouvoir: string; resume: string; actif?: string; role: string }
 
 export const PERSOS: Perso[] = [
-  { code: 'archeologue', nom: 'L’Archéologue', pouvoir: 'Fouilles', resume: 'À sa première visite de chacun des 3 premiers lieux, elle découvre un artefact innocenté.' },
-  { code: 'historienne', nom: 'L’Historienne', pouvoir: 'Érudition', resume: 'Chaque témoignage de PNJ lui livre 2 indices au lieu d’un.' },
-  { code: 'explorateur', nom: 'L’Explorateur', pouvoir: 'Grandes enjambées', resume: 'Se déplace de 4 pas au lieu de 3.' },
-  { code: 'cartographe', nom: 'Le Cartographe', pouvoir: 'Raccourci temporel', resume: 'Une fois par partie, se rend instantanément sur n’importe quel site.', actif: 'Raccourci temporel (1 fois)' },
-  { code: 'conservateur', nom: 'Le Conservateur', pouvoir: 'Inventaire', resume: 'Commence l’enquête avec un artefact déjà innocenté.' },
-  { code: 'agent', nom: 'L’Agent Temporel', pouvoir: 'Détection d’anomalie', resume: 'Une fois par partie, choisit une catégorie et découvre une carte qui n’est pas dans la solution.', actif: 'Détection d’anomalie (1 fois)' },
+  { code: 'archeologue', nom: 'L’Archéologue', role: 'Fouilles & stratigraphie', pouvoir: 'Fouilles', resume: 'À sa première visite de chacun des 3 premiers lieux, elle découvre un artefact innocenté.' },
+  { code: 'historienne', nom: 'L’Historienne', role: 'Chroniques & archives', pouvoir: 'Érudition', resume: 'Chaque témoignage de PNJ lui livre 2 indices au lieu d’un.' },
+  { code: 'explorateur', nom: 'L’Explorateur', role: 'Expéditions lointaines', pouvoir: 'Grandes enjambées', resume: 'Se déplace de 4 pas au lieu de 3.' },
+  { code: 'cartographe', nom: 'Le Cartographe', role: 'Routes & méridiens', pouvoir: 'Raccourci temporel', resume: 'Une fois par partie, se rend instantanément sur n’importe quel site.', actif: 'Raccourci temporel (1 fois)' },
+  { code: 'conservateur', nom: 'Le Conservateur', role: 'Collections & scellés', pouvoir: 'Inventaire', resume: 'Commence l’enquête avec un artefact déjà innocenté.' },
+  { code: 'agent_temporel', nom: 'L’Agent Temporel', role: 'Sauts de ligne temporelle', pouvoir: 'Détection d’anomalie', resume: 'Une fois par partie, choisit une catégorie et découvre une carte qui n’est pas dans la solution.', actif: 'Détection d’anomalie (1 fois)' },
+  { code: 'alchimiste', nom: 'L’Alchimiste', role: 'Transmutation & élixirs', pouvoir: 'Distillation', resume: 'Chaque carte qu’on lui montre en réfutation lui livre un indice de plus dans la même catégorie.' },
+  { code: 'linguiste', nom: 'La Linguiste', role: 'Langues mortes & glyphes', pouvoir: 'Glyphes', resume: 'Ses témoignages de PNJ sont toujours de la forme « A ou B », ce qui resserre l’enquête.' },
+  { code: 'collectionneur', nom: 'Le Collectionneur', role: 'Mécène de pièces rares', pouvoir: 'Cabinet de curiosités', resume: 'Commence l’enquête avec un mobile déjà innocenté.' },
+  { code: 'horloger', nom: 'L’Horloger', role: 'Mécanismes de précision', pouvoir: 'Remontage', resume: 'Une fois par partie, après son hypothèse, remonte le temps et se déplace une seconde fois.', actif: 'Remontage (1 fois)' },
 ];
 
 export const PERSO_PAR_CODE = Object.fromEntries(PERSOS.map((p) => [p.code, p])) as Record<string, Perso>;
 
 // ---------------------------------------------------------------- Cartes
 
-export const SUSPECTS: Carte[] = PERSOS.map((p) => ({ id: p.code, nom: p.nom.replace(/^L’|^Le /, (m) => (m === 'L’' ? 'L’' : 'Le ')), cat: 'suspect' as const }));
+export const SUSPECTS: Carte[] = PERSOS.map((p) => ({ id: p.code, nom: p.nom, cat: 'suspect' as const }));
 
 export const ARTEFACTS: Carte[] = [
   { id: 'sceptre', nom: 'Sceptre des Pharaons', cat: 'artefact' },
@@ -52,44 +57,81 @@ export const MOBILES: Carte[] = [
   { id: 'protection', nom: 'Protection de l’Histoire', cat: 'mobile' },
   { id: 'catastrophe', nom: 'Empêcher une catastrophe temporelle', cat: 'mobile' },
   { id: 'falsification', nom: 'Falsification du passé', cat: 'mobile' },
+  { id: 'immortalite', nom: 'Quête d’immortalité', cat: 'mobile' },
+  { id: 'proche', nom: 'Sauver un proche', cat: 'mobile' },
+  { id: 'modifier', nom: 'Modifier le passé', cat: 'mobile' },
+  { id: 'sabotage', nom: 'Sabotage des archives', cat: 'mobile' },
 ];
+
+// ---------------------------------------------------------------- PNJ
+
+export interface Pnj { code: string; nom: string; role: string; /** Catégorie sur laquelle il renseigne le plus volontiers. */ specialite?: Categorie }
+
+export const PNJS: Pnj[] = [
+  { code: 'historien', nom: 'L’Historien', role: 'Garantit un alibi chronologique sur un suspect ou un lieu.', specialite: 'suspect' },
+  { code: 'bibliothecaire', nom: 'La Bibliothécaire', role: 'Écarte un mobile incohérent avec les registres anciens.', specialite: 'mobile' },
+  { code: 'conservateur_loupe', nom: 'Le Conservateur de musée', role: 'Confirme l’absence d’un artefact dans sa chambre forte.', specialite: 'artefact' },
+  { code: 'cartographe_globe', nom: 'Le Cartographe', role: 'Connaît les routes : renseigne sur les lieux.', specialite: 'lieu' },
+  { code: 'guide', nom: 'Le Guide local', role: 'Indices rapides, parfois partiels.' },
+  { code: 'journaliste', nom: 'La Journaliste', role: 'Rumeurs de terrain qui orientent vers un suspect.', specialite: 'suspect' },
+  { code: 'marchand', nom: 'Le Marchand de reliques', role: 'Sait quel artefact change de mains.', specialite: 'artefact' },
+  { code: 'marin', nom: 'Le Marin', role: 'Les courants mènent droit aux zones d’anomalie.', specialite: 'lieu' },
+  { code: 'gardien', nom: 'Le Gardien de temple', role: 'Protège l’accès aux indices des sites fortifiés.', specialite: 'lieu' },
+  { code: 'moine', nom: 'Le Moine érudit', role: 'Un acte dicté par la sauvegarde d’un proche a une signature calme.', specialite: 'mobile' },
+  { code: 'antiquaire', nom: 'L’Antiquaire', role: 'Distingue les fausses pistes d’artefacts des vraies reliques.', specialite: 'artefact' },
+  { code: 'pilleur_de_tombes', nom: 'Le Pilleur de tombes', role: 'Peu bavard, mais ses souvenirs sont exacts.' },
+  { code: 'archiviste', nom: 'Le Grand Archiviste', role: 'Offre une déduction de haut niveau.' },
+  { code: 'pelerin', nom: 'Le Pèlerin', role: 'Les pierres dressées résonnent quand le passé est menacé.', specialite: 'suspect' },
+  { code: 'conteur', nom: 'Le Conteur', role: 'Chaque légende cache un motif humain.', specialite: 'mobile' },
+];
+export const PNJ_PAR_CODE = Object.fromEntries(PNJS.map((p) => [p.code, p])) as Record<string, Pnj>;
 
 // ---------------------------------------------------------------- Plateau
 
-export interface Pnj { code: string; nom: string }
-export interface Noeud { id: string; nom: string; type: 'lieu' | 'pnj'; x: number; y: number; epoque: string; pnj?: Pnj }
+/** 'lieu' = site d'enquête principal (hypothèses possibles) ; 'secondaire' = relais où l'on ne fait que consulter un témoin. */
+export interface Noeud {
+  id: string; nom: string; type: 'lieu' | 'secondaire'; x: number; y: number; epoque: string; region: string; role: string; pnj?: string;
+}
 
 const px = (x: number, y: number) => ({ x: +((x / 1672) * 100).toFixed(2), y: +((y / 941) * 100).toFixed(2) });
 
 export const NOEUDS: Noeud[] = [
-  { id: 'eiffel', nom: 'Tour Eiffel', type: 'lieu', epoque: 'Révolution industrielle', ...px(830, 285) },
-  { id: 'colisee', nom: 'Colisée de Rome', type: 'lieu', epoque: 'Empire romain', ...px(985, 185) },
-  { id: 'pyramides', nom: 'Pyramides de Gizeh', type: 'lieu', epoque: 'Égypte antique', ...px(760, 445) },
-  { id: 'chichen', nom: 'Chichén Itzá', type: 'lieu', epoque: 'Civilisation maya', ...px(215, 350) },
-  { id: 'muraille', nom: 'Grande Muraille', type: 'lieu', epoque: 'Chine impériale', ...px(1300, 185) },
-  { id: 'taj', nom: 'Taj Mahal', type: 'lieu', epoque: 'Empire moghol', ...px(1290, 370) },
-  { id: 'petra', nom: 'Petra', type: 'lieu', epoque: 'Royaume nabatéen', ...px(1008, 395) },
-  { id: 'machu', nom: 'Machu Picchu', type: 'lieu', epoque: 'Empire inca', ...px(375, 555) },
-  { id: 'atlantide', nom: 'Atlantide', type: 'lieu', epoque: 'Temps oubliés', ...px(685, 730) },
-  { id: 'bigben', nom: 'Big Ben', type: 'pnj', epoque: 'Ère victorienne', ...px(690, 130), pnj: { code: 'archiviste', nom: 'L’Archiviste Principal' } },
-  { id: 'liberte', nom: 'Statue de la Liberté', type: 'pnj', epoque: 'Nouveau Monde', ...px(305, 215), pnj: { code: 'conservateur_general', nom: 'Le Conservateur Général' } },
-  { id: 'moai', nom: 'Moaï de l’île de Pâques', type: 'pnj', epoque: 'Océanie ancienne', ...px(135, 690), pnj: { code: 'gardien', nom: 'Le Gardien des Archives' } },
-  { id: 'torii', nom: 'Torii de Miyajima', type: 'pnj', epoque: 'Japon féodal', ...px(1565, 265), pnj: { code: 'voyageur', nom: 'Le Voyageur Temporel' } },
-  { id: 'opera', nom: 'Opéra de Sydney', type: 'pnj', epoque: 'Monde moderne', ...px(1480, 700), pnj: { code: 'forgeron', nom: 'Le Forgeron Temporel' } },
-  { id: 'palais', nom: 'Palais d’Orient', type: 'pnj', epoque: 'Routes de la soie', ...px(1160, 480), pnj: { code: 'bibliothecaire', nom: 'La Bibliothécaire Antique' } },
+  // 12 lieux principaux
+  { id: 'eiffel', nom: 'Tour Eiffel', type: 'lieu', epoque: 'Révolution industrielle', region: 'Paris · France', role: 'Nœud central européen : point de départ de l’enquête.', ...px(869, 290) },
+  { id: 'colisee', nom: 'Colisée de Rome', type: 'lieu', epoque: 'Empire romain', region: 'Rome · Italie', role: 'Carrefour méditerranéen entre Europe, Orient et Asie.', pnj: 'conservateur_loupe', ...px(1050, 200) },
+  { id: 'pyramides', nom: 'Pyramides de Gizeh', type: 'lieu', epoque: 'Égypte antique', region: 'Gizeh · Égypte', role: 'Cœur de l’Afrique du Nord : relie Atlantide, Orient et Amérique.', pnj: 'historien', ...px(781, 455) },
+  { id: 'chichen', nom: 'Chichén Itzá', type: 'lieu', epoque: 'Civilisation maya', region: 'Yucatán · Mexique', role: 'Porte des Amériques.', pnj: 'guide', ...px(184, 345) },
+  { id: 'muraille', nom: 'Grande Muraille', type: 'lieu', epoque: 'Chine impériale', region: 'Nord · Chine', role: 'Bastion septentrional : trajet long, forte valeur d’enquête.', pnj: 'gardien', ...px(1366, 215) },
+  { id: 'taj', nom: 'Taj Mahal', type: 'lieu', epoque: 'Empire moghol', region: 'Agra · Inde', role: 'Pont vers l’Asie du Sud-Est.', pnj: 'antiquaire', ...px(1343, 395) },
+  { id: 'petra', nom: 'Petra', type: 'lieu', epoque: 'Royaume nabatéen', region: 'Ma’an · Jordanie', role: 'Cité taillée dans la roche, relais vers l’Asie.', pnj: 'marchand', ...px(1091, 420) },
+  { id: 'machu', nom: 'Machu Picchu', type: 'lieu', epoque: 'Empire inca', region: 'Andes · Pérou', role: 'Citadelle d’altitude, accès à l’Atlantide et au Pacifique.', pnj: 'conteur', ...px(367, 555) },
+  { id: 'atlantide', nom: 'Atlantide', type: 'lieu', epoque: 'Temps oubliés', region: 'Abîmes · Atlantique', role: 'Cité engloutie, au centre de l’océan.', pnj: 'archiviste', ...px(706, 755) },
+  { id: 'angkor', nom: 'Angkor Wat', type: 'lieu', epoque: 'Empire khmer', region: 'Siem Reap · Cambodge', role: 'Temple khmer englouti par la jungle.', pnj: 'pilleur_de_tombes', ...px(1251, 545) },
+  { id: 'stonehenge', nom: 'Stonehenge', type: 'lieu', epoque: 'Préhistoire', region: 'Wessex · Royaume-Uni', role: 'Cercle mégalithique, accès au Nord.', pnj: 'pelerin', ...px(689, 275) },
+  { id: 'alexandrie', nom: 'Bibliothèque d’Alexandrie', type: 'lieu', epoque: 'Antiquité hellénistique', region: 'Delta · Égypte', role: 'Sanctuaire du savoir, riche en recoupements.', ...px(947, 415) },
+  // 5 sites secondaires
+  { id: 'bigben', nom: 'Big Ben', type: 'secondaire', epoque: 'Ère victorienne', region: 'Londres · Royaume-Uni', role: 'Carrefour horloger du Nord.', pnj: 'bibliothecaire', ...px(698, 150) },
+  { id: 'liberte', nom: 'Statue de la Liberté', type: 'secondaire', epoque: 'Nouveau Monde', region: 'Côte Est · Amérique', role: 'Relais transatlantique.', pnj: 'marin', ...px(293, 225) },
+  { id: 'moai', nom: 'Moaï de l’île de Pâques', type: 'secondaire', epoque: 'Océanie ancienne', region: 'Île de Pâques · Pacifique', role: 'Relais pacifique isolé.', pnj: 'cartographe_globe', ...px(109, 690) },
+  { id: 'torii', nom: 'Torii de Miyajima', type: 'secondaire', epoque: 'Japon féodal', region: 'Mer Intérieure · Japon', role: 'Sanctuaire oriental.', pnj: 'moine', ...px(1590, 270) },
+  { id: 'opera', nom: 'Opéra de Sydney', type: 'secondaire', epoque: 'Monde moderne', region: 'Port Jackson · Australie', role: 'Avant-poste austral.', pnj: 'journaliste', ...px(1515, 690) },
 ];
 
 export const NOEUD_PAR_ID = Object.fromEntries(NOEUDS.map((n) => [n.id, n])) as Record<string, Noeud>;
+export const pnjDe = (noeudId: string): Pnj | undefined => { const c = NOEUD_PAR_ID[noeudId]?.pnj; return c ? PNJ_PAR_CODE[c] : undefined; };
 
 const ARETES: [string, string][] = [
-  ['liberte', 'bigben'], ['liberte', 'chichen'], ['bigben', 'eiffel'], ['eiffel', 'colisee'], ['eiffel', 'pyramides'], ['eiffel', 'chichen'],
-  ['colisee', 'muraille'], ['colisee', 'petra'], ['muraille', 'torii'], ['muraille', 'taj'], ['torii', 'taj'], ['torii', 'opera'],
-  ['taj', 'palais'], ['taj', 'petra'], ['petra', 'palais'], ['petra', 'pyramides'], ['pyramides', 'atlantide'], ['pyramides', 'palais'],
-  ['atlantide', 'machu'], ['atlantide', 'opera'], ['atlantide', 'palais'], ['machu', 'chichen'], ['machu', 'moai'], ['palais', 'opera'],
+  ['liberte', 'bigben'], ['liberte', 'chichen'], ['bigben', 'eiffel'], ['bigben', 'stonehenge'], ['stonehenge', 'eiffel'], ['stonehenge', 'chichen'],
+  ['eiffel', 'colisee'], ['eiffel', 'alexandrie'], ['eiffel', 'pyramides'], ['chichen', 'pyramides'], ['chichen', 'machu'],
+  ['colisee', 'muraille'], ['colisee', 'petra'], ['colisee', 'alexandrie'], ['muraille', 'torii'], ['muraille', 'taj'],
+  ['torii', 'taj'], ['torii', 'opera'], ['taj', 'petra'], ['taj', 'angkor'], ['petra', 'alexandrie'], ['alexandrie', 'pyramides'],
+  ['pyramides', 'atlantide'], ['pyramides', 'angkor'], ['machu', 'atlantide'], ['machu', 'moai'], ['atlantide', 'angkor'],
+  ['atlantide', 'opera'], ['angkor', 'opera'],
 ];
 
 export const VOISINS: Record<string, string[]> = Object.fromEntries(NOEUDS.map((n) => [n.id, [] as string[]]));
 for (const [a, b] of ARETES) { VOISINS[a].push(b); VOISINS[b].push(a); }
+export { ARETES };
 
 export const DEPART = 'eiffel';
 

@@ -8,7 +8,7 @@ import type { ActionJoueur, Attente, Descripteur, Evenement, Joueur, JoueurId, R
 import { validerValeur } from '../descripteurs';
 import type { Config } from './config';
 import {
-  CARTE_PAR_ID, CARTES, CARTES_PAR_CAT, CATEGORIES, DEPART, LIEUX, NOEUD_PAR_ID, NOEUDS, PERSOS, PERSO_PAR_CODE, distances,
+  CARTE_PAR_ID, CARTES, CARTES_PAR_CAT, CATEGORIES, DEPART, LIEUX, NOEUD_PAR_ID, NOEUDS, PERSOS, PERSO_PAR_CODE, distances, pnjDe,
   type Categorie,
 } from './donnees';
 
@@ -73,7 +73,7 @@ export const joueurActif = (d: EtatAR) => joueur(d, d.ordre[d.actif])!;
 export const nomCarte = (id: string) => CARTE_PAR_ID[id]?.nom ?? id;
 const nomNoeud = (id: string) => NOEUD_PAR_ID[id].nom;
 const pasDe = (d: EtatAR, p: JoueurAR) => d.config.pas + (p.perso === 'explorateur' ? 1 : 0);
-const aPouvoirActif = (p: JoueurAR) => (p.perso === 'cartographe' || p.perso === 'agent') && !p.pouvoirUtilise;
+const aPouvoirActif = (p: JoueurAR) => (p.perso === 'cartographe' || p.perso === 'agent_temporel') && !p.pouvoirUtilise;
 const cartesDeLHypothese = (h: Solution) => [h.suspect, h.artefact, h.lieu, h.mobile];
 
 export function log(c: Ctx, texte: string, narrer = true) {
@@ -94,14 +94,14 @@ const apprendreInnocente = (p: JoueurAR, id: string) => { if (!p.innocentes.incl
 // ------------------------------------------------------------------ Indices (toujours véridiques)
 
 /** Donne un indice vrai à `p` : « cette carte n'est pas la solution », ou « A ou B » dont l'un est la solution. */
-function genererIndice(c: Ctx, p: JoueurAR, source: string, categorie?: Categorie): boolean {
+function genererIndice(c: Ctx, p: JoueurAR, source: string, categorie?: Categorie, forcerAlternative = false): boolean {
   const { d, rng } = c;
   const sol = d.solution;
   const solIds = cartesDeLHypothese(sol);
   const inconnues = (cat?: Categorie) => CARTES.filter((k) => !solIds.includes(k.id) && !p.innocentes.includes(k.id) && (!cat || k.cat === cat));
 
-  if (!categorie && rng.suivant() < 0.4) {
-    const cat = rng.tirer(CATEGORIES).cat;
+  if ((!categorie || forcerAlternative) && (forcerAlternative || rng.suivant() < 0.4)) {
+    const cat = categorie ?? rng.tirer(CATEGORIES).cat;
     const vrai = sol[cat];
     const autres = inconnues(cat);
     if (autres.length) {
@@ -171,6 +171,8 @@ export function creerEtat(joueurs: Joueur[], mode: string, config: Config, rng: 
   log(c, 'Un artefact a disparu des Archives du Temps. L’enquête commence.');
   const conservateur = d.joueurs.find((p) => p.perso === 'conservateur');
   if (conservateur) genererIndice(c, conservateur, 'Inventaire', 'artefact');
+  const collectionneur = d.joueurs.find((p) => p.perso === 'collectionneur');
+  if (collectionneur) genererIndice(c, collectionneur, 'Cabinet de curiosités', 'mobile');
   evenementManche(c);
   debutTour(c);
   return { etat: c.d, evenements: c.ev };
@@ -243,7 +245,7 @@ function arriver(c: Ctx, p: JoueurAR, noeudId: string) {
   const n = NOEUD_PAR_ID[noeudId];
   if (p.noeud !== noeudId) log(c, `${p.pseudo} se rend à ${n.nom}.`);
   p.noeud = noeudId;
-  if (n.type === 'pnj') {
+  if (n.type === 'secondaire') {
     temoignage(c, p, noeudId);
     d.etape = 'fin';
     return;
@@ -255,13 +257,20 @@ function arriver(c: Ctx, p: JoueurAR, noeudId: string) {
   d.etape = 'hypothese';
 }
 
+/** Le PNJ du site est-il encore à consulter pour ce joueur ? */
+export const pnjDisponible = (p: JoueurAR, noeudId: string) => { const pnj = pnjDe(noeudId); return !!pnj && !p.vusPNJ.includes(pnj.code); };
+
 function temoignage(c: Ctx, p: JoueurAR, noeudId: string) {
-  const pnj = NOEUD_PAR_ID[noeudId].pnj!;
+  const pnj = pnjDe(noeudId);
+  if (!pnj) return;
   if (p.vusPNJ.includes(pnj.code)) return info(c, p, pnj.nom, '« Je vous ai déjà tout dit. »');
   p.vusPNJ.push(pnj.code);
   log(c, `${p.pseudo} consulte ${pnj.nom}.`, false);
   const nb = p.perso === 'historienne' ? 2 : 1;
-  for (let i = 0; i < nb; i++) genererIndice(c, p, pnj.nom);
+  for (let i = 0; i < nb; i++) {
+    const cat = pnj.specialite && c.rng.suivant() < 0.65 ? pnj.specialite : undefined;
+    genererIndice(c, p, pnj.nom, cat, p.perso === 'linguiste');
+  }
 }
 
 // ------------------------------------------------------------------ Hypothèse et réfutation
@@ -304,6 +313,7 @@ function montrer(c: Ctx, q: JoueurAR, carteId: string) {
   auteur.montrees[carteId] = q.id;
   apprendreInnocente(auteur, carteId);
   info(c, auteur, 'Réfutation', `${q.pseudo} vous montre : ${nomCarte(carteId)}.`);
+  if (auteur.perso === 'alchimiste') genererIndice(c, auteur, 'Distillation', CARTE_PAR_ID[carteId].cat);
   log(c, `${q.pseudo} réfute l’hypothèse en montrant une carte à ${auteur.pseudo}.`, false);
   d.phase = 'tour';
   d.refutation = null;
@@ -366,13 +376,17 @@ export function descripteursAR(d: EtatAR, j: JoueurAR): Descripteur[] {
         id: 'dest', type: 'choix', libelle: `Où vas-tu ? (jusqu’à ${pasDe(d, j)} pas)`,
         options: destinations(d, j).map(({ n, dist }) => ({
           valeur: n.id,
-          libelle: `${dist === 0 ? 'Rester à ' : ''}${n.nom} · ${n.type === 'lieu' ? 'enquête' : j.vusPNJ.includes(n.pnj!.code) ? 'témoin déjà consulté' : 'témoin'}${dist ? ` · ${dist} pas` : ''}`,
+          libelle: `${dist === 0 ? 'Rester à ' : ''}${n.nom} · ${n.type === 'lieu' ? 'enquête' : j.vusPNJ.includes(n.pnj!) ? 'témoin déjà consulté' : 'témoin'}${dist ? ` · ${dist} pas` : ''}`,
         })),
       }];
     case 'hypothese':
       return [{
         id: 'hypothese', type: 'choix', libelle: `Tu es à ${nomNoeud(j.noeud)}. Une hypothèse ?`,
-        options: [{ valeur: 'oui', libelle: 'Formuler une hypothèse ici' }, { valeur: 'non', libelle: 'Poursuivre sans hypothèse' }],
+        options: [
+          { valeur: 'oui', libelle: 'Formuler une hypothèse ici' },
+          ...(pnjDisponible(j, j.noeud) ? [{ valeur: 'pnj', libelle: `Interroger ${pnjDe(j.noeud)!.nom} (à la place d’une hypothèse)` }] : []),
+          { valeur: 'non', libelle: 'Poursuivre sans hypothèse' },
+        ],
       }];
     case 'h_suspect': return [{ id: 'suspect', type: 'choix', libelle: 'Qui soupçonnes-tu ?', options: optionsCartes('suspect') }];
     case 'h_artefact': return [{ id: 'artefact', type: 'choix', libelle: 'Quel artefact a été dérobé ?', options: optionsCartes('artefact') }];
@@ -380,7 +394,11 @@ export function descripteursAR(d: EtatAR, j: JoueurAR): Descripteur[] {
     case 'fin':
       return [{
         id: 'fin', type: 'choix', libelle: 'Que fais-tu pour finir ton tour ?',
-        options: [{ valeur: 'terminer', libelle: 'Terminer mon tour' }, { valeur: 'accuser', libelle: 'Faire mon accusation finale (une seule chance)' }],
+        options: [
+          { valeur: 'terminer', libelle: 'Terminer mon tour' },
+          ...(j.perso === 'horloger' && !j.pouvoirUtilise ? [{ valeur: 'rejouer', libelle: 'Remontage : me déplacer à nouveau (1 fois)' }] : []),
+          { valeur: 'accuser', libelle: 'Faire mon accusation finale (une seule chance)' },
+        ],
       }];
     case 'a_suspect':
       return [{ id: 'a_suspect', type: 'choix', libelle: 'Accusation : qui est le coupable ?', options: [{ valeur: '__annuler', libelle: '← Finalement, non' }, ...optionsCartes('suspect')] }];
@@ -429,6 +447,7 @@ export function appliquerAR(c: Ctx, p: JoueurAR, a: ActionJoueur) {
     case 'deplacement':
       return arriver(c, p, v);
     case 'hypothese':
+      if (v === 'pnj') temoignage(c, p, p.noeud);
       d.etape = v === 'oui' ? 'h_suspect' : 'fin';
       return;
     case 'h_suspect': d.brouillon.suspect = v; d.etape = 'h_artefact'; return;
@@ -436,6 +455,12 @@ export function appliquerAR(c: Ctx, p: JoueurAR, a: ActionJoueur) {
     case 'h_mobile': d.brouillon.mobile = v; return lancerHypothese(c, p);
     case 'fin':
       if (v === 'terminer') return finTour(c);
+      if (v === 'rejouer') {
+        p.pouvoirUtilise = true;
+        log(c, `${p.pseudo} remonte le temps et repart en enquête.`);
+        d.etape = 'deplacement';
+        return;
+      }
       d.brouillon = {};
       d.etape = 'a_suspect';
       return;

@@ -32,8 +32,8 @@ export function iaAR(d: EtatAR, id: string, rng: Rng): ActionJoueur | null {
 
   switch (desc.id) {
     case 'pouvoir': {
-      if (p.perso === 'agent') return rep('oui');
-      const pnjLibre = Object.values(NOEUD_PAR_ID).some((n) => n.pnj && !p.vusPNJ.includes(n.pnj.code));
+      if (p.perso === 'agent_temporel') return rep('oui');
+      const pnjLibre = Object.values(NOEUD_PAR_ID).some((n) => n.pnj && !p.vusPNJ.includes(n.pnj));
       return rep(pnjLibre && d.manche >= 2 && rng.suivant() < 0.5 ? 'oui' : 'non');
     }
     case 'categorie': {
@@ -53,8 +53,9 @@ export function iaAR(d: EtatAR, id: string, rng: Rng): ActionJoueur | null {
       for (const v of valeurs) {
         const n = NOEUD_PAR_ID[v];
         let s = rng.suivant() * 2 - (dist.get(v) ?? 0) * 0.2;
-        if (n.type === 'pnj') s += p.vusPNJ.includes(n.pnj!.code) ? -3 : 8;
+        if (n.type === 'secondaire') s += p.vusPNJ.includes(n.pnj!) ? -3 : 8;
         else {
+          if (n.pnj && !p.vusPNJ.includes(n.pnj)) s += 1.5;
           s += lieuxPossibles.includes(v) ? 6 : 1;
           s -= 1.5 * d.hypotheses.filter((h) => h.auteur === p.id && h.lieu === v).length;
         }
@@ -62,7 +63,7 @@ export function iaAR(d: EtatAR, id: string, rng: Rng): ActionJoueur | null {
       }
       return rep(meilleur);
     }
-    case 'hypothese': return rep('oui');
+    case 'hypothese': return rep(valeurs.includes('pnj') && rng.suivant() < 0.4 ? 'pnj' : 'oui');
     case 'suspect': return rep(pick('suspect'));
     case 'artefact': return rep(pick('artefact'));
     case 'mobile': return rep(pick('mobile'));

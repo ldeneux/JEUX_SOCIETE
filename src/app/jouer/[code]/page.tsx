@@ -6,8 +6,7 @@ import { session } from '@/lib/client/api';
 import { useCompteARebours, useSalon, useVue } from '@/lib/client/hooks';
 import { Actions } from '@/components/Actions';
 import { CarteRole } from '@/components/CarteRole';
-import { CartePerso } from '@/components/CartePerso';
-import { CarnetArchives, type DonneesCarnet } from '@/components/CarnetArchives';
+import { ArchivesJoueur } from '@/components/ArchivesJoueur';
 import { CAMPS, ROLES_INFO } from '@/lib/jeux/loupgarou/roles-info';
 import { parCode } from '@/lib/jeux/loupgarou/roles';
 
@@ -55,9 +54,21 @@ export default function Telephone() {
   const archives = salon?.jeu_code === 'archives';
   const urgent = secondes !== null && secondes <= 5;
 
+  // « Les Archives du Temps » a sa propre interface (carte, carnet visuel, PNJ), calquée sur la maquette.
+  if (archives && vue) {
+    return (
+      <>
+        <div className="fond archives" />
+        <main className="tel tel-archives">
+          <ArchivesJoueur code={code} vue={vue} version={diff.version} pseudos={pseudos} secondes={secondes} pseudo={moi ?? ''} />
+        </main>
+      </>
+    );
+  }
+
   return (
     <>
-      <div className="fond leger" />
+      <div className={`fond ${archives ? 'archives' : 'leger'}`} />
       <main className="tel">
         <div className="tel-haut">
           <span className="tel-pseudo">{moi || 'Ravensburg'}</span>
@@ -95,28 +106,16 @@ export default function Telephone() {
           </details>
         )}
 
-        {vue && archives && vue.donnees && (
-          <details className="tiroir panneau">
-            <summary style={{ cursor: 'pointer', color: 'var(--or-clair)', fontWeight: 600 }}>📓 Carnet d’enquête · {(vue.donnees as unknown as DonneesCarnet).position}</summary>
-            <div style={{ marginTop: '.6rem' }}><CarnetArchives donnees={vue.donnees as unknown as DonneesCarnet} /></div>
-          </details>
-        )}
-
         {vue && role && (
           <div className="tel-bas">
-            <button className="btn btn-bloc" onClick={() => setCarteOuverte(true)}>{archives ? '🕵️ Mon enquêteur' : '🎴 Voir ma carte'}</button>
+            <button className="btn btn-bloc" onClick={() => setCarteOuverte(true)}>🎴 Voir ma carte</button>
           </div>
         )}
       </main>
 
       {carteOuverte && vue && role && (
         <div className="carte-modale" onClick={() => setCarteOuverte(false)} role="dialog" aria-label="Ma carte">
-          {archives ? (
-            <>
-              <CartePerso code={role} grande />
-              <p>{(vue.donnees as { pouvoir?: string } | undefined)?.pouvoir}</p>
-            </>
-          ) : (
+          {(
             <>
               <CarteRole code={role} grande />
               <h2 style={{ margin: 0, color: 'var(--or-clair)' }}>{parCode(role).nom}</h2>
