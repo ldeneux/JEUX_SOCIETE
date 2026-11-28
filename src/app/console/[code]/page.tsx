@@ -101,6 +101,7 @@ export default function ConsolePartie() {
   const iaVoulus = iaLocal ?? Number(salon?.options?.ia ?? 0);
   const ia = Math.min(iaVoulus, Math.max(0, max - humains)); // les humains sont prioritaires
   const total = humains + ia;
+  const enquete = salon?.jeu_code === 'archives';
   const modeNom = manifeste?.modes.find((m) => m.code === salon?.mode)?.nom ?? salon?.mode;
 
   async function changerIA(n: number) {
@@ -126,26 +127,26 @@ export default function ConsolePartie() {
             <div style={{ color: 'var(--doux)', fontSize: '.9rem' }}>Scanne le QR code ou va sur <strong style={{ color: 'var(--texte)' }}>{url.replace(/^https?:\/\//, '').split('?')[0]}</strong> et saisis le code.</div>
           </div>
           <div className="panneau">
-            <h2 style={{ fontSize: '1.4rem' }}>Au village : {humains} humain{humains > 1 ? 's' : ''}{ia > 0 ? ` + ${ia} IA` : ''}</h2>
+            <h2 style={{ fontSize: '1.4rem' }}>{enquete ? 'Aux Archives' : 'Au village'} : {humains} {enquete ? 'enquêteur' : 'humain'}{humains > 1 ? 's' : ''}{ia > 0 ? ` + ${ia} IA` : ''}</h2>
             <div className="joueurs-salle">
               {joueurs.filter((j) => !j.est_ia).map((j) => (
                 <div key={j.id} className="joueur-puce"><span className="avatar">{j.pseudo.slice(0, 1).toUpperCase()}</span>{j.pseudo}</div>
               ))}
-              {ia > 0 && <div className="joueur-puce"><span className="avatar">🤖</span>{ia} joueur{ia > 1 ? 's' : ''} IA</div>}
-              {humains === 0 && ia === 0 && <span style={{ color: 'var(--doux)' }}>En attente des premiers habitants…</span>}
+              {ia > 0 && <div className="joueur-puce"><span className="avatar">🤖</span>{ia} {enquete ? 'enquêteur' : 'joueur'}{ia > 1 ? 's' : ''} IA</div>}
+              {humains === 0 && ia === 0 && <span style={{ color: 'var(--doux)' }}>{enquete ? 'En attente des premiers enquêteurs…' : 'En attente des premiers habitants…'}</span>}
             </div>
 
             <div className="ligne-ia">
-              <div><strong>Joueurs IA</strong><small>Complètent la table. Prénoms aléatoires, jamais ceux des humains. {humains === 0 && ia > 0 ? 'Mode spectateur : la console joue seule.' : ''}</small></div>
+              <div><strong>{enquete ? 'Enquêteurs IA' : 'Joueurs IA'}</strong><small>{enquete ? 'Complètent la table. Prénoms aléatoires, jamais ceux des enquêteurs humains.' : 'Complètent la table. Prénoms aléatoires, jamais ceux des humains.'} {humains === 0 && ia > 0 ? 'Mode spectateur : la console joue seule.' : ''}</small></div>
               <CompteurIA valeur={iaVoulus} max={max} onChange={changerIA} />
             </div>
-            <p className="total-table">{total} joueur{total > 1 ? 's' : ''} · il en faut de {min} à {max}</p>
+            <p className="total-table">{total} {enquete ? 'enquêteur' : 'joueur'}{total > 1 ? 's' : ''} · il en faut de {min} à {max}</p>
             {ia < iaVoulus && <small style={{ color: 'var(--doux)' }}>Les humains sont prioritaires : {iaVoulus - ia} IA en trop seront retirées.</small>}
 
             {erreur && <div className="erreur">{erreur}</div>}
             {total < min && (
               <button className="btn btn-bloc" style={{ marginTop: '.8rem' }} onClick={() => changerIA(Math.max(0, min - humains))}>
-                🤖 Compléter avec {Math.max(0, min - humains)} joueur(s) IA
+                🤖 Compléter avec {Math.max(0, min - humains)} {enquete ? 'enquêteur(s)' : 'joueur(s)'} IA
               </button>
             )}
             <button className="btn btn-or btn-bloc btn-grand" style={{ marginTop: '.8rem' }} disabled={occupe || total < min} onClick={lancer}>
