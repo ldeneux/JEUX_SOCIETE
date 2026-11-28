@@ -29,6 +29,10 @@ h1, h2, h3 { font-family: var(--titre); font-weight: 700; letter-spacing: 0.04em
 .fond { position: fixed; inset: 0; z-index: -1; background: var(--bg) url('/ravensburg/fond.webp') center / cover no-repeat; }
 .fond::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(13,15,20,.55) 0%, rgba(13,15,20,.78) 55%, rgba(13,15,20,.96) 100%); }
 .fond.leger::after { background: rgba(13,15,20,.84); }
+/* Console : les villageois réunis pour le vote */
+.fond.vote { background-image: url('/ravensburg/vote.webp'); }
+.fond.vote::after { background: linear-gradient(180deg, rgba(13,15,20,.35) 0%, rgba(13,15,20,.6) 55%, rgba(13,15,20,.9) 100%); }
+.fond.vote.leger::after { background: rgba(13,15,20,.68); }
 
 .conteneur { width: min(1120px, 100% - 2rem); margin-inline: auto; }
 .nav { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: calc(.9rem + var(--haut)) 0 .9rem; }
@@ -374,3 +378,37 @@ div.ap-pill { cursor: default; }
 .ap-enq-texte { display: grid; gap: .5rem; text-align: center; justify-items: center; }
 .ap-enq-texte p { margin: 0; color: var(--parchemin); font-size: .9rem; }
 .ap-stats { list-style: none; margin: .4rem 0 0; padding: 0; display: grid; gap: .25rem; font-size: .82rem; color: var(--doux); } .ap-stats b { color: var(--laiton-clair); }
+
+/* Dialogue PNJ, chronique, rythme */
+.ap-ticker { display: flex; gap: .45rem; align-items: flex-start; font-size: .78rem; line-height: 1.3; color: var(--parchemin); background: rgba(226,180,79,.1); border: 1px solid rgba(226,180,79,.35); border-radius: 10px; padding: .35rem .6rem; animation: apEntre .35s ease-out; }
+.ap-chronique { background: rgba(9,13,22,.7); border: 1px solid #1e293b; border-radius: 14px; padding: .7rem; margin-bottom: 1rem; text-align: left; }
+.ap-chronique ol { list-style: none; margin: 0; padding: 0; display: grid; gap: .3rem; font-size: .8rem; color: var(--doux); }
+.ap-chronique li.recent { color: #fff; font-weight: 600; }
+.ap-chronique summary { cursor: pointer; margin-top: .6rem; color: var(--laiton-clair); font-weight: 600; font-size: .82rem; }
+.ap-hyp { list-style: none; margin: .5rem 0 0; padding: 0; display: grid; gap: .6rem; }
+.ap-hyp li { background: rgba(17,24,39,.9); border: 1px solid #263248; border-radius: 12px; padding: .5rem; }
+.ap-hyp-tete { display: flex; justify-content: space-between; gap: .5rem; font-size: .76rem; margin-bottom: .4rem; } .ap-hyp-tete .ref { color: #6ee7b7; } .ap-hyp-tete .non { color: #fca5a5; font-weight: 700; }
+.ap-hyp-cartes { display: grid; grid-template-columns: repeat(4, 1fr); gap: .35rem; }
+.ap-hyp-cartes figure { margin: 0; text-align: center; } .ap-hyp-cartes img { width: 100%; aspect-ratio: 1; object-fit: contain; border-radius: 8px; background: radial-gradient(circle at 50% 40%, #1c2742, #0b1020 75%); }
+.ap-hyp-cartes figcaption { font-size: .58rem; line-height: 1.1; margin-top: .15rem; }
+
+.ap-modale { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 1rem; background: rgba(4,6,12,.86); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); overflow-y: auto; animation: apEntre .2s ease-out; }
+.ap-modale-carte { width: min(440px, 100%); display: grid; gap: .8rem; background: linear-gradient(180deg, #131c30, #0c1220); border: 1px solid var(--laiton); border-radius: 22px; padding: .9rem; box-shadow: 0 0 60px -10px rgba(226,180,79,.5); }
+.ap-modale-carte.petite { gap: .7rem; }
+.ap-pnj-portrait { position: relative; border-radius: 16px; overflow: hidden; border: 1px solid rgba(226,180,79,.5); background: #0b1020; aspect-ratio: 1; max-height: 46vh; margin: 0 auto; width: 100%; }
+.ap-pnj-portrait img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; display: block; }
+.ap-pnj-nom { position: absolute; left: 0; right: 0; bottom: 0; padding: 1.8rem .8rem .6rem; background: linear-gradient(0deg, rgba(4,6,12,.95), transparent); display: grid; }
+.ap-pnj-nom small { color: var(--laiton-clair); text-transform: uppercase; letter-spacing: .1em; font-size: .64rem; font-weight: 700; } .ap-pnj-nom b { font-family: var(--titre); font-size: 1.25rem; color: #fff; }
+.ap-confiance { display: flex; align-items: center; justify-content: center; gap: .6rem; font-size: .76rem; color: var(--doux); }
+.ap-confiance b { color: var(--laiton-clair); }
+.ap-etoiles { display: inline-flex; gap: .1rem; font-size: 1.35rem; line-height: 1; } .ap-etoiles i { font-style: normal; color: rgba(255,255,255,.16); } .ap-etoiles i.plein { color: #f5c542; text-shadow: 0 0 10px rgba(245,197,66,.7); }
+.ap-parole { margin: 0; padding: .7rem .9rem; border-left: 3px solid var(--laiton); background: rgba(226,180,79,.08); border-radius: 0 12px 12px 0; font-size: 1rem; line-height: 1.4; color: var(--parchemin); font-style: italic; }
+.ap-parole footer { margin-top: .4rem; font-size: .72rem; font-style: normal; color: var(--doux); }
+.ap-approches { display: grid; gap: .5rem; }
+.ap-approches button { display: grid; grid-template-columns: 2rem 1fr; gap: .6rem; align-items: center; text-align: left; font: inherit; color: var(--texte); background: var(--ardoise2); border: 1px solid #334155; border-radius: 14px; padding: .65rem .8rem; min-height: 56px; cursor: pointer; }
+.ap-approches button:hover:not(:disabled), .ap-approches button:focus-visible { border-color: var(--laiton); }
+.ap-approches button.risque { border-color: rgba(239,68,68,.45); }
+.ap-approches button:disabled { opacity: .55; }
+.ap-approches .ico { font-size: 1.5rem; text-align: center; } .ap-approches b { display: block; font-size: .95rem; } .ap-approches small { display: block; font-size: .72rem; color: var(--doux); line-height: 1.25; }
+.ap-resultat-tete { display: flex; align-items: center; gap: .7rem; } .ap-resultat-tete img { width: 64px; height: 64px; border-radius: 14px; object-fit: cover; object-position: 50% 18%; border: 1px solid var(--laiton); }
+.ap-resultat-tete b { display: block; font-family: var(--titre); font-size: 1.1rem; color: #fff; } .ap-resultat-tete small { display: block; color: var(--doux); font-size: .78rem; line-height: 1.3; }

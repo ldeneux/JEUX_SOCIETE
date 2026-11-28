@@ -69,7 +69,7 @@ export default function Console() {
 
   return (
     <>
-      <div className="fond leger" />
+      <div className="fond vote" />
       <Nav />
       <main className="conteneur section" style={{ maxWidth: 720 }}>
         <div className="etiquette">Console</div>

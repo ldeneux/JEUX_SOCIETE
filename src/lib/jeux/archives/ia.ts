@@ -3,7 +3,7 @@
  * ses indices, et l'historique PUBLIC des hypothèses (qui a tenté quoi, qui a réfuté).
  */
 import type { ActionJoueur, Rng } from '../contract';
-import { CARTES_PAR_CAT, CATEGORIES, NOEUD_PAR_ID, distances, type Categorie } from './donnees';
+import { CARTES_PAR_CAT, CATEGORIES, NOEUD_PAR_ID, distances, pnjDe, type Categorie } from './donnees';
 import { descripteursAR, joueur, type EtatAR, type JoueurAR } from './regles';
 
 /** Cartes encore possibles dans la solution pour une catégorie, selon ce que ce joueur sait. */
@@ -62,6 +62,10 @@ export function iaAR(d: EtatAR, id: string, rng: Rng): ActionJoueur | null {
         if (s > score) { score = s; meilleur = v; }
       }
       return rep(meilleur);
+    }
+    case 'pnj_dialogue': {
+      const conf = pnjDe(p.noeud)?.confiance ?? 3;
+      return rep(conf >= 4 && rng.suivant() < 0.6 ? 'presser' : 'ecouter');
     }
     case 'hypothese': return rep(valeurs.includes('pnj') && rng.suivant() < 0.4 ? 'pnj' : 'oui');
     case 'suspect': return rep(pick('suspect'));

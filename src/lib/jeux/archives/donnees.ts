@@ -65,24 +65,29 @@ export const MOBILES: Carte[] = [
 
 // ---------------------------------------------------------------- PNJ
 
-export interface Pnj { code: string; nom: string; role: string; /** Catégorie sur laquelle il renseigne le plus volontiers. */ specialite?: Categorie }
+export interface Pnj {
+  code: string; nom: string; role: string;
+  /** Catégorie sur laquelle il renseigne le plus volontiers. */ specialite?: Categorie;
+  /** Niveau de confiance de 1 à 5 : chances (n/5) qu'il cède quand on le presse de questions. */ confiance: number;
+  /** Ce qu'il dit en accueillant l'enquêteur. */ parole: string;
+}
 
 export const PNJS: Pnj[] = [
-  { code: 'historien', nom: 'L’Historien', role: 'Garantit un alibi chronologique sur un suspect ou un lieu.', specialite: 'suspect' },
-  { code: 'bibliothecaire', nom: 'La Bibliothécaire', role: 'Écarte un mobile incohérent avec les registres anciens.', specialite: 'mobile' },
-  { code: 'conservateur_loupe', nom: 'Le Conservateur de musée', role: 'Confirme l’absence d’un artefact dans sa chambre forte.', specialite: 'artefact' },
-  { code: 'cartographe_globe', nom: 'Le Cartographe', role: 'Connaît les routes : renseigne sur les lieux.', specialite: 'lieu' },
-  { code: 'guide', nom: 'Le Guide local', role: 'Indices rapides, parfois partiels.' },
-  { code: 'journaliste', nom: 'La Journaliste', role: 'Rumeurs de terrain qui orientent vers un suspect.', specialite: 'suspect' },
-  { code: 'marchand', nom: 'Le Marchand de reliques', role: 'Sait quel artefact change de mains.', specialite: 'artefact' },
-  { code: 'marin', nom: 'Le Marin', role: 'Les courants mènent droit aux zones d’anomalie.', specialite: 'lieu' },
-  { code: 'gardien', nom: 'Le Gardien de temple', role: 'Protège l’accès aux indices des sites fortifiés.', specialite: 'lieu' },
-  { code: 'moine', nom: 'Le Moine érudit', role: 'Un acte dicté par la sauvegarde d’un proche a une signature calme.', specialite: 'mobile' },
-  { code: 'antiquaire', nom: 'L’Antiquaire', role: 'Distingue les fausses pistes d’artefacts des vraies reliques.', specialite: 'artefact' },
-  { code: 'pilleur_de_tombes', nom: 'Le Pilleur de tombes', role: 'Peu bavard, mais ses souvenirs sont exacts.' },
-  { code: 'archiviste', nom: 'Le Grand Archiviste', role: 'Offre une déduction de haut niveau.' },
-  { code: 'pelerin', nom: 'Le Pèlerin', role: 'Les pierres dressées résonnent quand le passé est menacé.', specialite: 'suspect' },
-  { code: 'conteur', nom: 'Le Conteur', role: 'Chaque légende cache un motif humain.', specialite: 'mobile' },
+  { code: 'historien', nom: 'L’Historien', role: 'Garantit un alibi chronologique sur un suspect ou un lieu.', specialite: 'suspect', confiance: 5, parole: "Les chroniques ne mentent pas, voyageur : cette affaire sent la falsification." },
+  { code: 'bibliothecaire', nom: 'La Bibliothécaire', role: 'Écarte un mobile incohérent avec les registres anciens.', specialite: 'mobile', confiance: 5, parole: "Chut… Les registres de cette époque racontent une tout autre histoire." },
+  { code: 'conservateur_loupe', nom: 'Le Conservateur de musée', role: 'Confirme l’absence d’un artefact dans sa chambre forte.', specialite: 'artefact', confiance: 4, parole: "Rien ne sort de ma chambre forte sans que je le sache. Posez votre question." },
+  { code: 'cartographe_globe', nom: 'Le Cartographe', role: 'Connaît les routes : renseigne sur les lieux.', specialite: 'lieu', confiance: 4, parole: "Tous les chemins passent par ici, tôt ou tard. Où vous mènent vos soupçons ?" },
+  { code: 'guide', nom: 'Le Guide local', role: 'Indices rapides, parfois partiels.', confiance: 3, parole: "Je connais chaque pierre du coin… et quelques rumeurs, si le cœur vous en dit." },
+  { code: 'journaliste', nom: 'La Journaliste', role: 'Rumeurs de terrain qui orientent vers un suspect.', specialite: 'suspect', confiance: 3, parole: "Off the record : j’ai entendu des choses étranges. Mais ne me citez pas !" },
+  { code: 'marchand', nom: 'Le Marchand de reliques', role: 'Sait quel artefact change de mains.', specialite: 'artefact', confiance: 2, parole: "Tout s’achète, même un renseignement. Mais je ne suis pas réputé pour ma franchise." },
+  { code: 'marin', nom: 'Le Marin', role: 'Les courants mènent droit aux zones d’anomalie.', specialite: 'lieu', confiance: 3, parole: "Les courants ramènent toujours ce qu’on a jeté à l’eau. Écoutez bien." },
+  { code: 'gardien', nom: 'Le Gardien de temple', role: 'Protège l’accès aux indices des sites fortifiés.', specialite: 'lieu', confiance: 4, parole: "Nul n’entre sans mon accord. Mais pour la bonne cause, je veux bien parler." },
+  { code: 'moine', nom: 'Le Moine érudit', role: 'Un acte dicté par la sauvegarde d’un proche a une signature calme.', specialite: 'mobile', confiance: 5, parole: "La paix soit avec vous. Le silence m’a appris à bien observer." },
+  { code: 'antiquaire', nom: 'L’Antiquaire', role: 'Distingue les fausses pistes d’artefacts des vraies reliques.', specialite: 'artefact', confiance: 4, parole: "Ah, un œil averti ! Les vraies reliques se reconnaissent à leur poids d’histoire." },
+  { code: 'pilleur_de_tombes', nom: 'Le Pilleur de tombes', role: 'Peu bavard, mais ses souvenirs sont exacts.', confiance: 2, parole: "D’habitude je ne dis rien… mais j’ai vu des choses, dans le noir." },
+  { code: 'archiviste', nom: 'Le Grand Archiviste', role: 'Offre une déduction de haut niveau.', confiance: 5, parole: "Les Archives gardent tout. Même ce que certains aimeraient voir disparaître." },
+  { code: 'pelerin', nom: 'Le Pèlerin', role: 'Les pierres dressées résonnent quand le passé est menacé.', specialite: 'suspect', confiance: 4, parole: "Les pierres murmurent. Elles disent que quelqu’un a touché au passé." },
+  { code: 'conteur', nom: 'Le Conteur', role: 'Chaque légende cache un motif humain.', specialite: 'mobile', confiance: 3, parole: "Il était une fois… un coupable que personne n’a vu venir." },
 ];
 export const PNJ_PAR_CODE = Object.fromEntries(PNJS.map((p) => [p.code, p])) as Record<string, Pnj>;
 

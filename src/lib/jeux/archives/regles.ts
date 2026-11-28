@@ -32,10 +32,12 @@ export interface JoueurAR {
   lieuxVisites: string[];
   pouvoirUtilise: boolean;
   infos: Info[];
+  /** Résultat du dernier entretien avec un PNJ (affiché au téléphone, effacé au tour suivant). */
+  pnjDernier?: { code: string; nom: string; issue: 'ecoute' | 'succes' | 'echec' | 'depart'; lignes: string[] } | null;
 }
 
 export type Etape =
-  | 'pouvoir' | 'raccourci' | 'detection' | 'deplacement' | 'hypothese' | 'h_suspect' | 'h_artefact' | 'h_mobile'
+  | 'pouvoir' | 'raccourci' | 'detection' | 'deplacement' | 'pnj_dialogue' | 'hypothese' | 'h_suspect' | 'h_artefact' | 'h_mobile'
   | 'fin' | 'a_suspect' | 'a_artefact' | 'a_lieu' | 'a_mobile';
 
 export interface Solution { suspect: string; artefact: string; lieu: string; mobile: string }
@@ -64,7 +66,7 @@ export interface EtatAR {
   config: Config;
 }
 
-export interface Ctx { d: EtatAR; ev: Evenement[]; rng: Rng }
+export interface Ctx { d: EtatAR; ev: Evenement[]; rng: Rng; capture?: string[] }
 
 // ------------------------------------------------------------------ Helpers
 
@@ -85,6 +87,7 @@ export function log(c: Ctx, texte: string, narrer = true) {
 
 function info(c: Ctx, p: JoueurAR, libelle: string, valeur: string) {
   p.infos.push({ libelle, valeur });
+  c.capture?.push(valeur);
   if (p.infos.length > 25) p.infos.shift();
   c.ev.push({ type: 'info', visibilite: { type: 'prive', joueurs: [p.id] }, donnees: { libelle, valeur } });
 }
@@ -186,6 +189,7 @@ function debutTour(c: Ctx) {
   d.brouillon = {};
   d.refutation = null;
   d.hypCourante = null;
+  p.pnjDernier = null;
   d.etape = aPouvoirActif(p) ? 'pouvoir' : 'deplacement';
   log(c, `Manche ${d.manche} : ${p.pseudo}, ${PERSO_PAR_CODE[p.perso].nom.toLowerCase()}, mène l’enquête.`);
 }
@@ -246,8 +250,8 @@ function arriver(c: Ctx, p: JoueurAR, noeudId: string) {
   if (p.noeud !== noeudId) log(c, `${p.pseudo} se rend à ${n.nom}.`);
   p.noeud = noeudId;
   if (n.type === 'secondaire') {
-    temoignage(c, p, noeudId);
-    d.etape = 'fin';
+    if (pnjDisponible(p, noeudId)) ouvrirDialogue(c, p, noeudId);
+    else { info(c, p, pnjDe(noeudId)?.nom ?? 'Site', '« Je vous ai déjà tout dit. »'); d.etape = 'fin'; }
     return;
   }
   if (!p.lieuxVisites.includes(noeudId)) {
@@ -260,17 +264,37 @@ function arriver(c: Ctx, p: JoueurAR, noeudId: string) {
 /** Le PNJ du site est-il encore à consulter pour ce joueur ? */
 export const pnjDisponible = (p: JoueurAR, noeudId: string) => { const pnj = pnjDe(noeudId); return !!pnj && !p.vusPNJ.includes(pnj.code); };
 
-function temoignage(c: Ctx, p: JoueurAR, noeudId: string) {
-  const pnj = pnjDe(noeudId);
-  if (!pnj) return;
-  if (p.vusPNJ.includes(pnj.code)) return info(c, p, pnj.nom, '« Je vous ai déjà tout dit. »');
+function ouvrirDialogue(c: Ctx, p: JoueurAR, noeudId: string) {
+  const pnj = pnjDe(noeudId)!;
+  log(c, `${p.pseudo} s’entretient avec ${pnj.nom} (${NOEUD_PAR_ID[noeudId].nom}).`);
+  c.d.etape = 'pnj_dialogue';
+}
+
+/** Entretien avec le PNJ du site : écouter (1 indice sûr), le presser (n/5 de chances d'obtenir le double, sinon rien) ou partir. */
+function entretien(c: Ctx, p: JoueurAR, noeudId: string, choix: string) {
+  const pnj = pnjDe(noeudId)!;
+  const base = { code: pnj.code, nom: pnj.nom };
+  if (choix === 'partir') {
+    p.pnjDernier = { ...base, issue: 'depart', lignes: [] };
+    log(c, `${p.pseudo} salue ${pnj.nom} et poursuit son chemin.`, false);
+    return;
+  }
   p.vusPNJ.push(pnj.code);
-  log(c, `${p.pseudo} consulte ${pnj.nom}.`, false);
-  const nb = p.perso === 'historienne' ? 2 : 1;
+  const presse = choix === 'presser';
+  if (presse && c.rng.suivant() >= pnj.confiance / 5) {
+    p.pnjDernier = { ...base, issue: 'echec', lignes: [] };
+    log(c, `${p.pseudo} presse ${pnj.nom} de questions : le témoin se ferme et ne dira plus rien.`);
+    return;
+  }
+  const nb = (p.perso === 'historienne' ? 2 : 1) * (presse ? 2 : 1);
+  c.capture = [];
   for (let i = 0; i < nb; i++) {
     const cat = pnj.specialite && c.rng.suivant() < 0.65 ? pnj.specialite : undefined;
     genererIndice(c, p, pnj.nom, cat, p.perso === 'linguiste');
   }
+  p.pnjDernier = { ...base, issue: presse ? 'succes' : 'ecoute', lignes: c.capture };
+  c.capture = undefined;
+  log(c, `${p.pseudo} repart avec ${presse ? 'des confidences arrachées' : 'des informations'} de ${pnj.nom}.`, false);
 }
 
 // ------------------------------------------------------------------ Hypothèse et réfutation
@@ -391,6 +415,17 @@ export function descripteursAR(d: EtatAR, j: JoueurAR): Descripteur[] {
     case 'h_suspect': return [{ id: 'suspect', type: 'choix', libelle: 'Qui soupçonnes-tu ?', options: optionsCartes('suspect') }];
     case 'h_artefact': return [{ id: 'artefact', type: 'choix', libelle: 'Quel artefact a été dérobé ?', options: optionsCartes('artefact') }];
     case 'h_mobile': return [{ id: 'mobile', type: 'choix', libelle: 'Pour quel mobile ?', options: optionsCartes('mobile') }];
+    case 'pnj_dialogue': {
+      const pnj = pnjDe(j.noeud)!;
+      return [{
+        id: 'pnj', type: 'choix', libelle: `${pnj.nom} : « ${pnj.parole} »`,
+        options: [
+          { valeur: 'ecouter', libelle: '🤝 L’écouter : un indice sûr' },
+          { valeur: 'presser', libelle: `⚡ Le presser de questions : ${pnj.confiance * 20} % de chances d’obtenir le double, sinon il se ferme` },
+          { valeur: 'partir', libelle: '↩️ Le remercier et poursuivre' },
+        ],
+      }];
+    }
     case 'fin':
       return [{
         id: 'fin', type: 'choix', libelle: 'Que fais-tu pour finir ton tour ?',
@@ -447,8 +482,12 @@ export function appliquerAR(c: Ctx, p: JoueurAR, a: ActionJoueur) {
     case 'deplacement':
       return arriver(c, p, v);
     case 'hypothese':
-      if (v === 'pnj') temoignage(c, p, p.noeud);
+      if (v === 'pnj') return ouvrirDialogue(c, p, p.noeud);
       d.etape = v === 'oui' ? 'h_suspect' : 'fin';
+      return;
+    case 'pnj_dialogue':
+      entretien(c, p, p.noeud, v);
+      d.etape = 'fin';
       return;
     case 'h_suspect': d.brouillon.suspect = v; d.etape = 'h_artefact'; return;
     case 'h_artefact': d.brouillon.artefact = v; d.etape = 'h_mobile'; return;

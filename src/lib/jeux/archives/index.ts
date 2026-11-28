@@ -58,4 +58,5 @@ export const archives: JeuModule<EtatAR, Config> = {
   vueJoueur: vueJoueurAR,
   resultat,
   ia: iaAR,
+  pauseIASecondes: 3,
 };

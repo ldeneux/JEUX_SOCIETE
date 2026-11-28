@@ -15,7 +15,7 @@ Les 38 autres cartes sont distribuées. Le premier qui accuse juste gagne.
 ## Un tour
 1. **Pouvoir spécial** (si disponible).
 2. **Déplacement** : jusqu'à 3 pas le long des chemins (sites fermés exclus).
-3. **PNJ** : arriver sur un site secondaire donne un **témoignage** ; sur un lieu principal, tu peux au choix **interroger le PNJ local à la place d'une hypothèse**. Chaque témoignage est donné une fois par enquêteur et par PNJ : « cette carte n'a rien à voir » ou « le coupable est A ou B ». Les témoignages sont toujours vrais.
+3. **PNJ** (entretien interactif : le PNJ se présente avec une réplique et un **niveau de confiance de 1 à 5 étoiles**, puis tu choisis : **l'écouter** = 1 indice sûr ; **le presser** = n/5 de chances d'obtenir le double d'indices, sinon il se ferme pour de bon ; **poursuivre** = tu ne le « consommes » pas) : arriver sur un site secondaire donne un **témoignage** ; sur un lieu principal, tu peux au choix **interroger le PNJ local à la place d'une hypothèse**. Chaque témoignage est donné une fois par enquêteur et par PNJ : « cette carte n'a rien à voir » ou « le coupable est A ou B ». Les témoignages sont toujours vrais.
 4. **Hypothèse** (sur un lieu d'enquête) : tu proposes suspect + artefact + mobile ; le lieu est celui où tu te trouves. Dans l'ordre de la table, le premier joueur qui détient au moins une de ces 4 cartes doit en **montrer une, en secret, à toi seul**. Si personne ne peut réfuter, tout le monde le sait.
 5. **Fin de tour** : terminer, ou **accuser** (une seule chance : une accusation fausse écarte le joueur, qui continue de réfuter avec ses cartes).
 
@@ -43,3 +43,7 @@ Jusqu'à 6 joueurs au total. Les IA raisonnent comme un joueur : leurs cartes, c
 
 ## Pas encore dans cette version (GDD)
 Modes Coopération et Traître caché, 50+ artefacts, ailes par civilisation (la carte du monde les remplace), quêtes secondaires des PNJ, chat intégré.
+
+
+## Rythme des IA
+Les tours des IA sont espacés d'environ 3 secondes et diffusés un par un ; l'écran « Camp de base » affiche les dernières nouvelles et l'historique des hypothèses (qui a proposé quoi, qui a réfuté).

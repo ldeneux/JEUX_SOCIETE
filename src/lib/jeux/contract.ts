@@ -173,6 +173,9 @@ export interface SetupCtx<Config> {
 export interface JeuModule<Etat = unknown, Config = unknown> {
   manifeste: Manifeste;
 
+  /** Si défini, les tours d'IA sont espacés de ce nombre de secondes (une diffusion par joueur d'IA) pour rester lisibles. */
+  pauseIASecondes?: number;
+
   /** Valide et complète les options saisies sur la console (valeurs par défaut incluses). */
   configSchema: ZodType<Config>;
 

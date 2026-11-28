@@ -3,7 +3,7 @@ import { ErreurHttp } from '@/lib/serveur/supabase';
 import { apresTransition, creerDeps, estMembre, repondre, salonParCode, sbService, utilisateur, type Params } from '@/lib/serveur/api';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 30;
+export const maxDuration = 60;
 
 /** Fait avancer la partie si l'échéance est dépassée. Idempotent : appelé par la console (et par le cron). */
 export async function POST(req: Request, { params }: Params) {

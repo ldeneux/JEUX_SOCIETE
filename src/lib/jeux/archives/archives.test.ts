@@ -175,8 +175,32 @@ describe('règles', () => {
     const hyp = archives.vueJoueur(e, id).actions[0];
     expect(hyp.type === 'choix' && hyp.options.map((o) => o.valeur)).toContain('pnj');
     e = archives.appliquer(e, id, { id: 'hypothese', valeur: 'pnj' }, creerRng('p')).etat as EtatAR;
+    expect(e.etape).toBe('pnj_dialogue');
+    // Le PNJ se présente (parole + niveau de confiance) puis l'enquêteur choisit son approche.
+    const v = archives.vueJoueur(e, id);
+    expect((v.donnees as any).dialogue.confiance).toBe(5);
+    expect((v.donnees as any).dialogue.parole.length).toBeGreaterThan(10);
+    e = archives.appliquer(e, id, { id: 'pnj', valeur: 'ecouter' }, creerRng('p2')).etat as EtatAR;
     expect(e.etape).toBe('fin');
-    expect(e.joueurs.find((x) => x.id === id)!.vusPNJ).toContain('historien');
+    const moi = e.joueurs.find((x) => x.id === id)!;
+    expect(moi.vusPNJ).toContain('historien');
+    expect(moi.pnjDernier!.issue).toBe('ecoute');
+    expect(moi.pnjDernier!.lignes.length).toBeGreaterThanOrEqual(1);
+    // Partir sans l'interroger ne le « consomme » pas.
+    let f = structuredClone(base);
+    f.joueurs.find((x) => x.id === id)!.noeud = 'pyramides'; f.etape = 'pnj_dialogue';
+    f = archives.appliquer(f, id, { id: 'pnj', valeur: 'partir' }, creerRng('p3')).etat as EtatAR;
+    expect(f.joueurs.find((x) => x.id === id)!.vusPNJ).toHaveLength(0);
+    expect(f.etape).toBe('fin');
+    // Presser un PNJ peu fiable (2/5) échoue souvent : on vérifie que les deux issues existent.
+    const issues = new Set<string>();
+    for (let k = 0; k < 40; k++) {
+      let g = structuredClone(base);
+      g.joueurs.find((x) => x.id === id)!.noeud = 'angkor'; g.etape = 'pnj_dialogue'; // Pilleur de tombes : 2/5
+      g = archives.appliquer(g, id, { id: 'pnj', valeur: 'presser' }, creerRng(`pr${k}`)).etat as EtatAR;
+      issues.add(g.joueurs.find((x) => x.id === id)!.pnjDernier!.issue);
+    }
+    expect([...issues].sort()).toEqual(['echec', 'succes']);
   });
 
   it('le collectionneur démarre avec un mobile innocenté', () => {
@@ -251,4 +275,26 @@ describe('moteur générique + Archives (dépôt en mémoire, horloge simulée)'
       expect(mesCartes.length).toBe(p.main.length);
     }
   }, 120_000);
+
+  it('rythme des IA : chaque tour d’IA est diffusé séparément, avec une pause entre deux', async () => {
+    const joueurs = [0, 1, 2].map((i) => ({ id: `b${i}`, pseudo: `Bot${i}`, place: i, ia: true }));
+    let stocke: EtatStocke | null = null;
+    const depot: Depot = {
+      charger: async () => (stocke ? structuredClone(stocke) : null),
+      creer: async (_s, s) => { stocke = { ...s, version: 0 }; },
+      sauver: async (_s, v, etat, echeance) => {
+        if (!stocke || stocke.version !== v) return false;
+        stocke = { ...stocke, etat: structuredClone(etat), echeance, version: v + 1 };
+        return true;
+      },
+      joueurs: async () => joueurs, joueurDeUser: async () => null, journaliser: async () => {},
+    };
+    let pauses = 0; let diffusions = 0;
+    const deps: Deps = { depot, pause: async () => { pauses++; }, diffuseur: { console: async () => { diffusions++; }, joueur: async () => {} } };
+    await demarrerPartie(deps, 'r1', 'archives', 'classique', { toursMax: 30 });
+    await jouerIA(deps, 'r1');
+    expect(pauses).toBeGreaterThan(5);
+    expect(diffusions).toBeGreaterThan(pauses); // une diffusion par tour d'IA, pas une seule pour toute la table
+    expect(archives.resultat((stocke as unknown as EtatStocke).etat as EtatAR)).not.toBeNull();
+  }, 60_000);
 });

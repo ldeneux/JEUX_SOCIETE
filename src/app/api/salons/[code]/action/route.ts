@@ -3,7 +3,7 @@ import { ErreurHttp } from '@/lib/serveur/supabase';
 import { apresTransition, creerDeps, repondre, salonParCode, sbService, utilisateur, type Params } from '@/lib/serveur/api';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 30;
+export const maxDuration = 60;
 
 /** Action d'un joueur depuis son téléphone. Body : { id, valeur } */
 export async function POST(req: Request, { params }: Params) {

@@ -77,7 +77,7 @@ export default function ConsolePartie() {
   if (diff.vue) {
     return (
       <>
-        <div className="fond leger" />
+        <div className={`fond ${salon?.jeu_code === 'archives' ? 'archives' : 'vote leger'}`} />
         <main className="conteneur plateau">
           {salon?.jeu_code === 'archives' ? <PlateauArchives vue={diff.vue} secondes={secondes} /> : <PlateauConsole vue={diff.vue} secondes={secondes} />}
           <button className="btn" style={{ position: 'fixed', bottom: 'calc(.8rem + var(--bas))', left: '1rem', minHeight: 40, padding: '.4rem .9rem' }} onClick={() => { setVoix(!voix); speechSynthesis?.cancel(); }}>
@@ -113,7 +113,7 @@ export default function ConsolePartie() {
 
   return (
     <>
-      <div className="fond" />
+      <div className={`fond ${enquete ? 'archives' : 'vote'}`} />
       <main className="conteneur salon">
         <div className="entete-partie">
           <span className="marque">{manifeste?.nom ?? 'Salon'}</span>

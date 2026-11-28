@@ -51,7 +51,7 @@ export async function estMembre(sb: Sb, salon: Salon, userId: string): Promise<b
 }
 
 export function creerDeps(sb: Sb, salon: Salon) {
-  return { depot: creerDepot(sb), diffuseur: creerDiffuseur(sb, salon.hote_id) };
+  return { depot: creerDepot(sb), diffuseur: creerDiffuseur(sb, salon.hote_id), pause: (ms: number) => new Promise<void>((r) => setTimeout(r, ms)) };
 }
 
 /** Si la partie vient de se terminer : statut du salon + mise à jour de la fraîcheur des rôles. */

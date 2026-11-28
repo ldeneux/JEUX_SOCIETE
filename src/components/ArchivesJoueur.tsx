@@ -10,11 +10,15 @@ import { PERSO_PAR_CODE } from '@/lib/jeux/archives/donnees';
 
 interface NoeudJ { id: string; nom: string; type: 'lieu' | 'secondaire'; x: number; y: number; region: string; epoque: string; role: string; ferme: boolean; visite: boolean; pnj: string | null }
 interface PionJ { id: string; pseudo: string; perso: string; noeud: string; elimine: boolean; moi: boolean }
-interface PnjJ { code: string; nom: string; role: string; specialite: string | null; noeud: string | null; lieu: string | null; vu: boolean; ici: boolean }
+interface PnjJ { code: string; nom: string; role: string; confiance: number; specialite: string | null; noeud: string | null; lieu: string | null; vu: boolean; ici: boolean }
 export interface DonneesJoueur extends DonneesCarnet {
   positionId: string; pouvoirUtilise: boolean; manche: number; toursMax: number; etape: string; monTour: boolean;
   actif: { id: string; pseudo: string } | null; nbCartes: number; dests: Record<string, number>; destsMode: 'pas' | 'raccourci';
   noeuds: NoeudJ[]; pions: PionJ[]; pnj: PnjJ[];
+  dialogue: { code: string; nom: string; role: string; parole: string; confiance: number; specialite: string | null; lieu: string } | null;
+  pnjDernier: { code: string; nom: string; issue: 'ecoute' | 'succes' | 'echec' | 'depart'; lignes: string[] } | null;
+  narration: string; chronique: string[];
+  hypotheses: { manche: number; auteur: string; cartes: { cat: string; id: string; nom: string }[]; refute: string | null }[];
 }
 
 type Onglet = 'camp' | 'enqueteur' | 'carte' | 'carnet' | 'indices';
@@ -31,6 +35,7 @@ export function ArchivesJoueur({ code, vue, version, pseudos, secondes, pseudo }
   const [onglet, setOnglet] = useState<Onglet>('camp');
   const [inspecte, setInspecte] = useState<string>(d.positionId);
   const [envoi, setEnvoi] = useState(false);
+  const [resultatVu, setResultatVu] = useState('');
   const [erreur, setErreur] = useState('');
 
   // Bascule automatique sur « Mon tour » quand l'enquête t'attend.
@@ -83,6 +88,7 @@ export function ArchivesJoueur({ code, vue, version, pseudos, secondes, pseudo }
           </div>
           <div className="ap-barre"><div style={{ width: `${pct}%` }} /></div>
         </div>
+        {d.narration && !fin && <div className="ap-ticker" key={d.narration}><span>📣</span>{d.narration}</div>}
       </header>
 
       {/* ---------- Une seule ligne d'onglets ---------- */}
@@ -109,12 +115,38 @@ export function ArchivesJoueur({ code, vue, version, pseudos, secondes, pseudo }
               <i>Carte →</i>
             </button>
           )}
+          {!fin && (
+            <div className="ap-chronique">
+              <h2 className="ap-h2">Dernières nouvelles</h2>
+              <ol>
+                {d.chronique.slice(-5).map((l, i, tab) => <li key={`${i}-${l}`} className={i === tab.length - 1 ? 'recent' : ''}>{l}</li>)}
+              </ol>
+              {d.hypotheses.length > 0 && (
+                <details>
+                  <summary>Hypothèses récentes ({d.hypotheses.length})</summary>
+                  <ul className="ap-hyp">
+                    {d.hypotheses.map((h, i) => (
+                      <li key={i}>
+                        <div className="ap-hyp-tete"><b>M{h.manche} · {h.auteur}</b><span className={h.refute ? 'ref' : 'non'}>{h.refute ? `réfutée par ${h.refute}` : 'non réfutée !'}</span></div>
+                        <div className="ap-hyp-cartes">
+                          {h.cartes.map((k) => (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <figure key={k.id}><img src={imgCarte(k.cat, k.id)} alt="" loading="lazy" /><figcaption>{k.nom}</figcaption></figure>
+                          ))}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              )}
+            </div>
+          )}
           <div className="ap-etat">
             <span className="ap-etiquette">{fin ? 'Conseil des Archives' : aAgir ? 'Ton tour' : 'En attente'}</span>
             <h1>{vue.titre}</h1>
             {vue.message && <div className="message">{vue.message}</div>}
           </div>
-          {aAgir && <Actions code={code} actions={vue.actions} version={version} pseudos={pseudos} />}
+          {aAgir && !d.dialogue && <Actions code={code} actions={vue.actions} version={version} pseudos={pseudos} />}
           {!aAgir && !fin && d.actif && <p className="ap-doux">Observe la carte et complète ton carnet pendant que {d.actif.pseudo} joue.</p>}
 
           <div className="ap-cartes">
@@ -194,6 +226,84 @@ export function ArchivesJoueur({ code, vue, version, pseudos, secondes, pseudo }
           </ul>
         </section>
       )}
+
+      {/* ---------- Dialogue avec un PNJ ---------- */}
+      {d.dialogue && vue.actions[0]?.type === 'choix' && (
+        <DialoguePnj dlg={d.dialogue} options={vue.actions[0].options} envoi={envoi} erreur={erreur}
+          onChoix={async (valeur) => {
+            setEnvoi(true); setErreur('');
+            try { await appeler(`/api/salons/${code}/action`, { corps: { id: 'pnj', valeur } }); setOnglet('camp'); }
+            catch (e) { setErreur((e as Error).message); }
+            finally { setEnvoi(false); }
+          }} />
+      )}
+      {!d.dialogue && d.pnjDernier && resultatVu !== `${d.manche}:${d.pnjDernier.code}:${d.pnjDernier.issue}` && (
+        <ResultatPnj r={d.pnjDernier} onFermer={() => setResultatVu(`${d.manche}:${d.pnjDernier!.code}:${d.pnjDernier!.issue}`)} />
+      )}
+    </div>
+  );
+}
+
+const Etoiles = ({ n }: { n: number }) => (
+  <span className="ap-etoiles" role="img" aria-label={`Confiance ${n} sur 5`}>
+    {[1, 2, 3, 4, 5].map((i) => <i key={i} className={i <= n ? 'plein' : ''}>★</i>)}
+  </span>
+);
+
+const APPROCHES: Record<string, { icone: string; titre: string; detail: (c: number) => string }> = {
+  ecouter: { icone: '🤝', titre: 'L’écouter', detail: () => 'Un indice sûr, sans risque.' },
+  presser: { icone: '⚡', titre: 'Le presser de questions', detail: (c) => `${c * 20} % de chances d’obtenir le double d’indices. Sinon, il se ferme pour de bon.` },
+  partir: { icone: '↩️', titre: 'Le remercier et poursuivre', detail: () => 'Il ne sera pas « consommé » : tu pourras revenir.' },
+};
+
+/** Fenêtre d'entretien : le PNJ se présente, dit sa réplique, affiche son niveau de confiance, et l'enquêteur choisit son approche. */
+function DialoguePnj({ dlg, options, envoi, erreur, onChoix }: { dlg: NonNullable<DonneesJoueur['dialogue']>; options: { valeur: string; libelle: string }[]; envoi: boolean; erreur: string; onChoix: (v: string) => void }) {
+  return (
+    <div className="ap-modale" role="dialog" aria-modal="true" aria-label={`Entretien avec ${dlg.nom}`}>
+      <div className="ap-modale-carte">
+        <div className="ap-pnj-portrait">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={imgPnj(dlg.code)} alt={dlg.nom} />
+          <div className="ap-pnj-nom"><small>{dlg.lieu}</small><b>{dlg.nom}</b></div>
+        </div>
+        <div className="ap-confiance"><span>Niveau de confiance</span><Etoiles n={dlg.confiance} /><b>{dlg.confiance}/5</b></div>
+        <blockquote className="ap-parole">« {dlg.parole} »<footer>{dlg.role}</footer></blockquote>
+        <div className="ap-approches">
+          {options.map((o) => {
+            const a = APPROCHES[o.valeur];
+            return (
+              <button key={o.valeur} type="button" disabled={envoi} onClick={() => onChoix(o.valeur)} className={o.valeur === 'presser' ? 'risque' : ''}>
+                <span className="ico">{a?.icone ?? '•'}</span>
+                <span><b>{a?.titre ?? o.libelle}</b><small>{a?.detail(dlg.confiance) ?? ''}</small></span>
+              </button>
+            );
+          })}
+        </div>
+        {erreur && <div className="erreur">{erreur}</div>}
+      </div>
+    </div>
+  );
+}
+
+const REACTION: Record<string, string> = {
+  ecoute: 'Le témoin parle sans détour.',
+  succes: 'Sous la pression, le témoin finit par lâcher le morceau.',
+  echec: 'Trop de questions : le témoin se ferme comme une huître. Plus rien à en tirer.',
+  depart: 'Tu salues le témoin et poursuis ton chemin.',
+};
+
+function ResultatPnj({ r, onFermer }: { r: NonNullable<DonneesJoueur['pnjDernier']>; onFermer: () => void }) {
+  return (
+    <div className="ap-modale" role="dialog" aria-modal="true" aria-label="Ce que le témoin t’a appris" onClick={onFermer}>
+      <div className="ap-modale-carte petite" onClick={(e) => e.stopPropagation()}>
+        <div className="ap-resultat-tete">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={imgPnj(r.code)} alt="" /><div><b>{r.nom}</b><small>{REACTION[r.issue]}</small></div>
+        </div>
+        {r.lignes.length > 0 && <div className="secrets">{r.lignes.map((l, i) => <div key={i}>{l}</div>)}</div>}
+        {r.issue === 'echec' && <p className="ap-doux">Tu repars les mains vides. Ce PNJ ne te dira plus rien.</p>}
+        <button type="button" className="btn btn-or btn-bloc" onClick={onFermer}>Compris</button>
+      </div>
     </div>
   );
 }

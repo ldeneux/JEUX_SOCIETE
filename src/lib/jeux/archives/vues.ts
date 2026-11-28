@@ -48,6 +48,18 @@ function donneesJoueur(d: EtatAR, j: JoueurAR, perso: (typeof PERSO_PAR_CODE)[st
     monTour,
     actif: actif ? { id: actif.id, pseudo: actif.pseudo } : null,
     nbCartes: j.main.length,
+    dialogue: monTour && d.etape === 'pnj_dialogue' && pnjDe(j.noeud)
+      ? { code: pnjDe(j.noeud)!.code, nom: pnjDe(j.noeud)!.nom, role: pnjDe(j.noeud)!.role, parole: pnjDe(j.noeud)!.parole, confiance: pnjDe(j.noeud)!.confiance, specialite: pnjDe(j.noeud)!.specialite ?? null, lieu: NOEUD_PAR_ID[j.noeud].nom }
+      : null,
+    pnjDernier: j.pnjDernier ?? null,
+    narration: d.narration,
+    chronique: d.journal.slice(-8),
+    hypotheses: d.hypotheses.slice(-6).reverse().map((h) => ({
+      manche: h.manche,
+      auteur: d.joueurs.find((x) => x.id === h.auteur)?.pseudo ?? '?',
+      cartes: [['suspect', h.suspect], ['artefact', h.artefact], ['lieu', h.lieu], ['mobile', h.mobile]].map(([cat, id]) => ({ cat, id, nom: nomCarte(id) })),
+      refute: h.refutePar ? d.joueurs.find((x) => x.id === h.refutePar)?.pseudo ?? '?' : null,
+    })),
     dests,
     destsMode: d.etape === 'raccourci' ? 'raccourci' : 'pas',
     noeuds: NOEUDS.map((n) => ({
@@ -57,7 +69,7 @@ function donneesJoueur(d: EtatAR, j: JoueurAR, perso: (typeof PERSO_PAR_CODE)[st
     pions: d.joueurs.map((p) => ({ id: p.id, pseudo: p.pseudo, perso: p.perso, noeud: p.noeud, elimine: p.elimine, moi: p.id === j.id })),
     pnj: PNJS.map((p) => {
       const site = NOEUDS.find((n) => n.pnj === p.code);
-      return { code: p.code, nom: p.nom, role: p.role, specialite: p.specialite ?? null, noeud: site?.id ?? null, lieu: site?.nom ?? null, vu: j.vusPNJ.includes(p.code), ici: pnjDe(j.noeud)?.code === p.code };
+      return { code: p.code, nom: p.nom, role: p.role, confiance: p.confiance, specialite: p.specialite ?? null, noeud: site?.id ?? null, lieu: site?.nom ?? null, vu: j.vusPNJ.includes(p.code), ici: pnjDe(j.noeud)?.code === p.code };
     }),
   };
 }

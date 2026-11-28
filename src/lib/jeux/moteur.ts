@@ -53,6 +53,8 @@ export interface Deps {
   depot: Depot;
   diffuseur: Diffuseur;
   maintenant?: () => number; // injectable pour les tests
+  /** Attente réelle entre deux tours d'IA (absente en test : les IA jouent alors sans délai). */
+  pause?: (ms: number) => Promise<void>;
 }
 
 export class ErreurJeu extends Error {
@@ -193,6 +195,7 @@ export async function vuePourConsole(deps: Deps, salonId: string) {
  */
 export async function jouerIA(deps: Deps, salonId: string): Promise<number> {
   let total = 0;
+  const debut = deps.maintenant?.() ?? Date.now();
   for (let tour = 0; tour < 80; tour++) {
     const s = await deps.depot.charger(salonId);
     if (!s || s.etat === null || s.etat === undefined) break;
@@ -204,6 +207,7 @@ export async function jouerIA(deps: Deps, salonId: string): Promise<number> {
     let etat = s.etat;
     const evenements: Evenement[] = [];
     let agi = 0;
+    let fin = false;
     for (let i = 0; i < 500 && !mod.resultat(etat); i++) {
       const attendus = mod.attente(etat).attendus.filter((id) => bots.has(id));
       let joue = false;
@@ -216,9 +220,11 @@ export async function jouerIA(deps: Deps, salonId: string): Promise<number> {
         evenements.push(...t.evenements);
         agi++;
         joue = true;
+        // Rythme : on sauvegarde (donc on diffuse) à chaque changement de joueur pour que les humains voient chaque tour d'IA.
+        if (mod.pauseIASecondes && deps.pause && !mod.attente(etat).attendus.includes(id)) fin = true;
         break;
       }
-      if (!joue) break;
+      if (!joue || fin) break;
     }
     if (agi === 0) break;
     try {
@@ -228,6 +234,11 @@ export async function jouerIA(deps: Deps, salonId: string): Promise<number> {
       throw e;
     }
     total += agi;
+    // Laisse le temps de lire ce que l'IA vient de faire avant d'enchaîner (budget borné pour tenir dans la durée de la fonction).
+    if (mod.pauseIASecondes && deps.pause && !mod.resultat(etat) && (deps.maintenant?.() ?? Date.now()) - debut < 40_000
+      && mod.attente(etat).attendus.some((id) => bots.has(id))) {
+      await deps.pause(mod.pauseIASecondes * 1000);
+    }
   }
   return total;
 }

@@ -19,7 +19,7 @@ const manifeste: Manifeste = {
   code: 'loupgarou',
   nom: 'LOUPS-GAROUS : ÉDITION RAVENSBURG',
   description: 'Le village dort, les loups rôdent, et une fenêtre s’illumine au sommet du château.',
-  visuel: '/ravensburg/fond.webp',
+  visuel: '/ravensburg/place-village.webp',
   joueurs: { min: 6, max: 30 },
   dureeMinutes: 45,
   modes: [
